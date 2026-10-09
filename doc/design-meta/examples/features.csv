@@ -1,0 +1,26 @@
+id,feature,phase,priority,contract,acceptance
+feature.batch,Batch .eml generation,MVP,must,Generate exact requested count into new directory; default 100,Count of manifest entries equals count of .eml files
+feature.seed,Deterministic seeds,MVP,must,Seed defaults to 0; derive separate per-message per-component SHA-256 namespaces,Same canonical plan and pinned toolchain yield identical .eml bytes and manifest
+feature.plan,Replayable batch plan,MVP,must,Versioned JSON plan with exact fixture allocations and resolved profiles,Saving and replaying plan reproduces checksums
+feature.coverage,Coverage mode,MVP,must,One instance of every selected fixture before cycling sorted IDs,Reject count below minimum; manifest summary gives exact per-fixture counts
+feature.weighted,Weighted allocation,Phase 2,should,Integer weights with largest-remainder allocation and stable ID ties,Exact count and allocations independent of iteration order
+feature.locale,Regional and script coverage,MVP,must,Prioritize UK then US then European Latin-script languages then Asia and other regions,Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT; later packs opt in
+feature.profiles,Client and provider profiles,MVP,must,Separate versioned client profile and provider profile with compatibility registry,Each manifest lists both IDs revisions and ordered expected headers
+feature.headers,Rich predictable headers,MVP,must,From To Cc Reply-To Date Message-ID Subject MIME-Version plus optional trace list and threading headers,Assert header multiplicity ordering encoding and controlled values; Bcc absent from wire by default
+feature.text,Plain text,MVP,must,ASCII UTF-8 LF-to-CRLF normalization and explicit transfer encoding,Decoded body and charset match manifest
+feature.html,HTML and alternatives,MVP,must,HTML-only and multipart/alternative plain then HTML with escaped synthetic values,No scripts forms remote assets tracking or active URLs
+feature.attachments,Safe attachments,MVP,must,PNG JPEG PDF TXT CSV with predictable names sizes media types and SHA-256,Decoded attachment hashes match packaged assets
+feature.inline,CID inline images,MVP,must,multipart/related with HTML referencing deterministic Content-ID,Every cid reference resolves exactly once within related subtree
+feature.nesting,Linear and nested MIME,MVP,must,Support simple trees and explicit depth parameter with fixed node budget,Manifest preorder part paths types and tree depth equal serialized tree
+feature.threading,Threads and forwarded email,MVP,must,Deterministic Message-ID In-Reply-To References and message/rfc822 attachments,Every referenced generated ID exists and timestamps follow thread order
+feature.encoding,Encoding variety,MVP,must,7bit quoted-printable base64; RFC 2047 subjects and RFC 2231 filenames,Decoded values correct; raw encodings explicitly asserted
+feature.legacy,Legacy and international encoding,Phase 2,should,ISO-8859-1 Windows-1252 ISO-2022-JP GB18030 where representable; UTF-8 international headers separate profile,Reject unsupported charset/text combinations; no silent transliteration
+feature.manifest,Assertion manifest,MVP,must,Versioned manifest.json containing raw hashes semantic expectations and structural paths,Manifest provides positive presence and negative absence assertions without relying solely on parser output
+feature.stress,Parser stress fixtures,MVP,must,Explicit --include-stress plus stress fixture selection; deterministic bounded raw-byte mutations,Each mutation has stable ID exact offsets expected defects and recommended parser outcome
+feature.limits,Resource limits,MVP,must,Enforce count byte node depth header and attachment caps before and during streaming writes,Over-budget request fails before publishing destination
+feature.offline,Offline and inert output,MVP,must,No sending DNS network reads remote resources shell execution or real inbox samples,Generation succeeds with network denied and assets packaged locally
+feature.maildir,Mailbox directory export,Phase 2,should,Export valid corpus as Maildir with exact bytes and deterministic flags,Client can import mailbox; stress files remain separate
+feature.validate,Corpus validation,MVP,must,Verify manifest hashes safe assets required headers plan coverage and normal MIME invariants,Detect tampering; stress validation checks planned anomalies without recursive unbounded parsing
+feature.errors,Machine-readable diagnostics,MVP,must,Stable error codes JSON diagnostics option and exit status,Usage/config 2; IO/validation 1; success 0
+feature.inspect,Catalog and preview,MVP,must,List profiles fixtures locales and limits; plan without writing .eml,JSON catalog and plan stable for same inputs
+feature.mbox,mbox export,Later,could,Optional importer-friendly adapter with explicit From-line escaping,Document transformations and preserve original .eml hashes

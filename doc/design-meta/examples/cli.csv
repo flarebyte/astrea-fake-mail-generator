@@ -1,0 +1,21 @@
+id,command_or_option,phase,default,contract,example
+cli.generate,generate,MVP,core pack; 100 messages; seed 0,Publish new output directory with valid/ stress/ manifest.json plan.json and assets.json,uv run --locked astrea generate --out ./fixtures --count 100 --seed 42
+cli.pack,--pack,MVP,core,Repeatable additive packs; stable resolved fixture order; stress requires separate gate,--pack core
+cli.fixture,--fixture,MVP,all fixtures in selected packs,Repeatable IDs narrow pack selection; incompatible filters fail instead of dropping cases,--fixture fixture.uk.plain
+cli.count,--count,MVP,100,Positive integer counts wire messages including thread members; max 10000,--count 24
+cli.locale,--locale,MVP,catalog-defined fixture locale,Repeatable locales expand declared variants only; unknown or incompatible selection fails,--locale en_GB
+cli.client,--client-profile,MVP,fixture default,Override only when compatible with selected provider and required fixture features,--client-profile client.thunderbird.v1
+cli.provider,--provider-profile,MVP,fixture default,Validate both profile pairing and fixture header constraints,--provider-profile provider.generic.v1
+cli.seed,--seed,MVP,0,Unsigned 64-bit integer; per-component deterministic derivation,--seed 42
+cli.date,--base-date,MVP,2025-01-15T12:00:00Z,RFC 3339 UTC instant; deterministic per-index time increments and thread order,--base-date 2025-01-15T12:00:00Z
+cli.mode,--mode,MVP,coverage,Coverage mode ensures selected cases; weighted added Phase 2,--mode coverage
+cli.depth,--depth,MVP,6 for nested normal; 32 for stress depth,Root MIME node depth 1; valid range depends on fixture; maximum 64,--depth 8
+cli.stress,--include-stress,MVP,false,Required for --pack stress or any stress fixture; gate alone never selects stress,--pack stress --include-stress
+cli.plan,plan,MVP,same options as generate,Emit resolved plan JSON to stdout; dry run with no output writes,uv run --locked astrea plan --count 24 --seed 42
+cli.planfile,generate --plan,MVP,none,Read strict schema-versioned resolved JSON plan; only --out and --json-diagnostics may accompany,uv run --locked astrea generate --plan batch-plan.json --out ./fixtures
+cli.list,list fixtures/profiles/locales/packs,MVP,text,Catalog includes IDs phase revisions compatibility and minimum message counts; --json supported,uv run --locked astrea list fixtures --json
+cli.validate,validate --input,MVP,none,Check corpus consistency safety and declared assertions using bounded inspection,uv run --locked astrea validate --input ./fixtures --json-diagnostics
+cli.limits,--max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes,MVP,hard caps,Optional lower limits only; increasing hard caps rejected,--max-message-bytes 1048576
+cli.diagnostics,--json-diagnostics,MVP,false,Structured error code field context and actionable message on stderr; stdout remains machine-readable,--json-diagnostics
+cli.export,export --format maildir --input --out,Phase 2,valid messages only,New Maildir containing valid corpus; reject stress inclusion; no network import,uv run --locked astrea export --format maildir --input ./fixtures --out ./mailbox
+cli.version,--version,MVP,none,Print generator catalog and manifest schema versions,uv run --locked astrea --version

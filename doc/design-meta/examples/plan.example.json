@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "catalog_version": "1",
+  "generator_version": "0.1.0-example",
+  "seed": 42,
+  "base_date": "2025-01-15T12:00:00Z",
+  "mode": "coverage",
+  "count": 1,
+  "include_stress": false,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 16,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "messages": [
+    {
+      "index": 1,
+      "fixture_id": "fixture.uk.plain",
+      "occurrence": 0,
+      "thread_member_index": 0,
+      "locale": "en_GB",
+      "client_profile": "client.thunderbird.v1",
+      "provider_profile": "provider.generic.v1",
+      "validity": "valid",
+      "parameters": {}
+    }
+  ]
+}

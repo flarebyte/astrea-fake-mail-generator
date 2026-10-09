@@ -1,0 +1,10 @@
+id,delivery_order,phase,region,locales,scripts,content_focus,assertions
+region.uk,1,MVP,United Kingdom,en_GB,Latin,GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later,Locale recorded; deterministic offset from fixed dates; £ encoded correctly
+region.us,2,MVP,United States,en_US,Latin,USD receipts MM/DD/YYYY prose US spelling America/New_York,No OS locale reliance; date prose and wire Date checked separately
+region.europe.latin,3,MVP,Europe Latin scripts,fr_FR;de_DE;es_ES;it_IT,Latin,EUR receipts accents umlauts apostrophes and localized business prose,NFC accents preserved in subjects bodies display names and filenames
+region.europe.expanded,4,Phase 2,Europe broader coverage,pt_PT;nl_NL;pl_PL;sv_SE;el_GR;uk_UA,Latin;Greek;Cyrillic,Diacritics Greek and Cyrillic after Latin baseline,Script and normalization cases recorded; reviewed localized templates required
+region.asia.latin,5,Phase 2,Asia Latin and English baseline,en_IN;en_SG;id_ID;vi_VN,Latin,INR SGD IDR VND dates Vietnamese combining-mark edge cases,Geography independent of script; template locale and effective Faker locale both recorded
+region.asia.nonlatin,6,Phase 2,Asia additional scripts,ja_JP;zh_CN;zh_TW;ko_KR;hi_IN;th_TH,Japanese;Han;Hangul;Devanagari;Thai,CJK wide characters mixed-script names local currency and no-space wrapping,UTF-8 first; reviewed translations and fonts not assumed on recipient client
+region.world.latin,7,Phase 3,Rest of world Latin and English,pt_BR;es_MX;en_AU;en_ZA,Latin,BRL MXN AUD ZAR local business fixtures,No real street addresses payment details or reachable contacts
+region.world.rtl,8,Phase 3,Middle East and additional RTL coverage,ar_EG;he_IL,Arabic;Hebrew,RTL body mixed-direction subjects and filenames,Explicit dir attributes and bidi code points in manifest; filenames remain generated ASCII
+region.world.expanded,9,Later,Additional regions,reviewed-locale-registry,Multiple,Add locales only with reviewed content and fixture assertions,Unsupported locale rejected; provider fallback disclosed and never relabeled as translated content

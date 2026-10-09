@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "example_only": true,
+  "generator_version": "0.1.0-example",
+  "catalog_version": "1",
+  "template_revision": "example",
+  "toolchain": {
+    "python": "PIN_EXACT_PATCH",
+    "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "faker": "PIN_EXACT_VERSION"
+  },
+  "seed": 42,
+  "count": 1,
+  "total_message_bytes": 0,
+  "coverage": {
+    "minimum_messages": 1,
+    "fixture_counts": {
+      "fixture.uk.plain": 1
+    }
+  },
+  "assets": [],
+  "messages": [
+    {
+      "index": 1,
+      "path": "valid/000001-fixture.uk.plain.eml",
+      "fixture_id": "fixture.uk.plain",
+      "occurrence": 0,
+      "seed_namespace": "fixture.uk.plain/en_GB/0/0",
+      "locale": "en_GB",
+      "region": "region.uk",
+      "script": "Latin",
+      "effective_faker_locales": {
+        "name": "en_GB"
+      },
+      "profiles": {
+        "client": {
+          "id": "client.thunderbird.v1",
+          "revision": "1"
+        },
+        "provider": {
+          "id": "provider.generic.v1",
+          "revision": "1"
+        }
+      },
+      "validity": "valid",
+      "size_bytes": 0,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expectations": {
+        "headers": {
+          "ordered_names": [
+            "Return-Path",
+            "Received",
+            "Received",
+            "From",
+            "To",
+            "Date",
+            "Message-ID",
+            "Subject",
+            "User-Agent",
+            "Content-Language",
+            "MIME-Version",
+            "Content-Type",
+            "Content-Transfer-Encoding"
+          ],
+          "multiplicity": {
+            "Received": 2,
+            "Subject": 1
+          },
+          "absent": [
+            "Bcc",
+            "X-Mailer"
+          ],
+          "decoded_values": {
+            "From": "Morgan Ellis <morgan@example.test>",
+            "To": "Alex Lane <alex@example.test>",
+            "Subject": "Meeting on Friday",
+            "Message-ID": "<astrea-example-1@example.test>"
+          }
+        },
+        "body_facts": [
+          "Friday",
+          "10:00"
+        ],
+        "mime": {
+          "depth": 1,
+          "node_count": 1,
+          "nodes": [
+            {
+              "path": "1",
+              "depth": 1,
+              "media_type": "text/plain",
+              "charset": "utf-8",
+              "disposition": null,
+              "content_id": null,
+              "transfer_encoding": "7bit",
+              "decoded_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+            }
+          ]
+        },
+        "attachments": [],
+        "thread": null,
+        "stress": null
+      }
+    }
+  ]
+}
