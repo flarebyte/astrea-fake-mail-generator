@@ -5,8 +5,8 @@ glossary.variant,Fixture variant,A specific version of a fixture chosen by langu
 glossary.batch,Batch,All email files produced by one generate command.,100 .eml files in ./fixtures
 glossary.pack,Pack,A named group of fixture definitions.,core for normal test cases; stress for parser robustness tests
 glossary.catalog,Fixture catalog,The list of supported fixtures packs languages and header profiles with their versions.,list fixtures --json
-glossary.plan,Batch plan,JSON describing what to generate and which settings to use. It is the input used to repeat a batch.,plan.json selects fixture IDs counts seed and languages
-glossary.manifest,Manifest,The output index in manifest.json. It lists generated email files their source fixtures checksums and expected test results.,A file uses fixture.us.pdf and should contain one PDF attachment
+glossary.plan,Batch plan,JSON describing what to generate and which settings to use. It is the input used to repeat a batch.,batch.astrea-plan.json selects fixture IDs counts seed and languages
+glossary.manifest,Manifest,The output index in batch.astrea-manifest.json. It lists generated email files their source fixtures checksums and expected test results.,A file uses fixture.us.pdf and should contain one PDF attachment
 glossary.assertion,Assertion,A property that a test checks against an expected value.,Subject equals Meeting on Friday; Bcc is absent
 glossary.seed,Seed,An integer that controls generated random values. Same inputs and software versions give the same output.,--seed 42
 glossary.checksum,SHA-256 checksum,A fingerprint of file bytes used to check that content has not changed.,sha256 in a manifest entry identifies the exact .eml bytes

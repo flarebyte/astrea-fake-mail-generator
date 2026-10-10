@@ -10,7 +10,7 @@ Python CLI that generates repeatable folders of safe .eml test files, including 
 
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
-A fixture defines a test case. `plan.json` records what to generate. `manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
+A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
@@ -28,8 +28,8 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | 100 .eml files in ./fixtures | glossary.batch | All email files produced by one generate command. | Batch |
 | core for normal test cases; stress for parser robustness tests | glossary.pack | A named group of fixture definitions. | Pack |
 | list fixtures --json | glossary.catalog | The list of supported fixtures packs languages and header profiles with their versions. | Fixture catalog |
-| plan.json selects fixture IDs counts seed and languages | glossary.plan | JSON describing what to generate and which settings to use. It is the input used to repeat a batch. | Batch plan |
-| A file uses fixture.us.pdf and should contain one PDF attachment | glossary.manifest | The output index in manifest.json. It lists generated email files their source fixtures checksums and expected test results. | Manifest |
+| batch.astrea-plan.json selects fixture IDs counts seed and languages | glossary.plan | JSON describing what to generate and which settings to use. It is the input used to repeat a batch. | Batch plan |
+| A file uses fixture.us.pdf and should contain one PDF attachment | glossary.manifest | The output index in batch.astrea-manifest.json. It lists generated email files their source fixtures checksums and expected test results. | Manifest |
 | Subject equals Meeting on Friday; Bcc is absent | glossary.assertion | A property that a test checks against an expected value. | Assertion |
 | --seed 42 | glossary.seed | An integer that controls generated random values. Same inputs and software versions give the same output. | Seed |
 | sha256 in a manifest entry identifies the exact .eml bytes | glossary.checksum | A fingerprint of file bytes used to check that content has not changed. | SHA-256 checksum |
@@ -58,14 +58,14 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | acceptance | contract | feature | id | phase | priority |
 | --- | --- | --- | --- | --- | --- |
 | The folder contains exactly one .eml file for each manifest entry | Create the requested number of .eml files in a new folder; default 100 | Generate a folder of .eml files | feature.batch | MVP | must |
-| Same inputs and software versions produce identical email files and manifest.json | Use seed 0 by default; derive a separate random seed for each email and content field | Repeatable generation | feature.seed | MVP | must |
-| Running the saved plan produces the same files and SHA-256 checksums | Save selected fixtures counts languages and header profiles in plan.json | Saved generation plan | feature.plan | MVP | must |
+| Same inputs and software versions produce identical email files and batch.astrea-manifest.json | Use seed 0 by default; derive a separate random seed for each email and content field | Repeatable generation | feature.seed | MVP | must |
+| Running the saved plan produces the same files and SHA-256 checksums | Save selected fixtures counts languages and header profiles in batch.astrea-plan.json | Saved generation plan | feature.plan | MVP | must |
 | Reject counts too small to include all selected cases; report how many files each fixture produced | Generate each selected fixture variant at least once before repeating cases | Include every selected test case | feature.coverage | MVP | must |
 | Produce the requested file count; use fixture IDs to break allocation ties; reject counts that cannot fit complete groups | Phase 2: assign integer weights to fixtures and convert them to whole test-case groups; keep thread groups complete | Control fixture proportions | feature.weighted | Phase 2 | should |
 | Core fixtures cover en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; check characters encoding and text direction | Start with English European Latin-script languages Japanese and Arabic RTL; add more languages in later releases | Language and writing-system coverage | feature.locale | MVP | must |
 | Each manifest entry identifies the two profiles and their versions and expected headers | Use separate named sets of client headers and provider headers; allow only supported combinations | Client and provider header examples | feature.profiles | MVP | must |
 | Check header values order repeated headers and encoding; Bcc is absent from the .eml file by default | Generate standard sender recipient date subject and MIME headers; add reply list and delivery headers when requested | Predictable email headers | feature.headers | MVP | must |
-| Decoded text and character encoding match the expected values in manifest.json | Support ASCII and UTF-8 text; use CRLF line endings and a specified transfer encoding | Plain-text emails | feature.text | MVP | must |
+| Decoded text and character encoding match the expected values in batch.astrea-manifest.json | Support ASCII and UTF-8 text; use CRLF line endings and a specified transfer encoding | Plain-text emails | feature.text | MVP | must |
 | No scripts forms tracking remote images or active links | Support HTML-only emails and emails with both plain-text and HTML versions; escape inserted text | HTML emails | feature.html | MVP | must |
 | Attachment type size filename and SHA-256 checksum match the manifest | Attach reviewed PNG JPEG PDF TXT and CSV files with predictable names and contents | Safe test attachments | feature.attachments | MVP | must |
 | Each cid: link points to exactly one embedded image in the same related group | Embed images as MIME parts and reference them with cid: links in the HTML | Images inside HTML emails | feature.inline | MVP | must |
@@ -73,7 +73,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Reply links point to generated emails; thread dates increase; attached emails have their own IDs | Generate related emails with Message-ID In-Reply-To and References; support an attached email using message/rfc822 | Replies and forwarded emails | feature.threading | MVP | must |
 | Check both encoded file bytes and decoded text or attachment contents | Support 7bit quoted-printable and base64; encode non-ASCII headers with RFC 2047 and filenames with RFC 2231 | Standard email encodings | feature.encoding | MVP | must |
 | Reject text that the chosen encoding cannot represent; never silently replace characters | Phase 2: support ISO-8859-1 Windows-1252 ISO-2022-JP and GB18030; add a separate profile for raw UTF-8 headers | Older character encodings | feature.legacy | Phase 2 | should |
-| Tests can find each file and check what should be present or absent; expectations come from the fixture rules | Write manifest.json with one entry per .eml file: source fixture checksum and expected headers text parts and attachments | Generated-file index and expected results | feature.manifest | MVP | must |
+| Tests can find each file and check what should be present or absent; expectations come from the fixture rules | Write batch.astrea-manifest.json with one entry per .eml file: source fixture checksum and expected headers text parts and attachments | Generated-file index and expected results | feature.manifest | MVP | must |
 | Record each deliberate error or stress parameter and the expected safe parser response | Require both explicit stress-case selection and --include-stress; generate deep wide or intentionally malformed emails within fixed limits | Parser robustness test cases | feature.stress | MVP | must |
 | Reject requests exceeding limits; leave no completed output folder after failure | Check maximum files bytes parts headers depth and attachments before and during generation | Generation limits | feature.limits | MVP | must |
 | Generation works with networking disabled; all attachment contents are reviewed and passive | Generate locally from packaged templates and attachments without sending email or fetching content | Offline generation and safe content | feature.offline | MVP | must |
@@ -185,7 +185,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | command_or_option | contract | default | example | id | phase |
 | --- | --- | --- | --- | --- | --- |
-| generate | Create .eml files directly in a new output folder plus plan.json and manifest.json | core pack; 100 messages; seed 0 | uv run --locked astrea generate --out ./fixtures --count 100 --seed 42 | cli.generate | MVP |
+| generate | Create .eml files directly in a new output folder plus batch.astrea-plan.json and batch.astrea-manifest.json | core pack; 100 messages; seed 0 | uv run --locked astrea generate --out ./fixtures --count 100 --seed 42 | cli.generate | MVP |
 | --pack | Combine named fixture groups; sort the selected cases consistently; stress cases also require --include-stress | core | --pack core | cli.pack | MVP |
 | --fixture | Select specific fixture IDs from the chosen packs; reject incompatible selections | all fixtures in selected packs | --fixture fixture.uk.plain | cli.fixture | MVP |
 | --count | Number of .eml files including every message in a thread; minimum depends on selected cases; maximum 10000 | 100 | --count 24 | cli.count | MVP |
@@ -198,9 +198,9 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | --depth | Root part has depth 1; normal limit 16; stress limit 64; applies to nested fixtures | 6 for nested normal; 32 for stress depth | --depth 8 | cli.depth | MVP |
 | --include-stress | Required when selecting any stress fixture; this flag alone does not select stress cases | false | --pack stress --include-stress | cli.stress | MVP |
 | plan | Print the complete generation plan as JSON without creating files | same options as generate | uv run --locked astrea plan --count 24 --seed 42 | cli.plan | MVP |
-| generate --plan | Read a saved JSON plan; reject unsupported versions or fields; only --out and --json-diagnostics may accompany it | none | uv run --locked astrea generate --plan batch-plan.json --out ./fixtures | cli.planfile | MVP |
+| generate --plan | Read an explicitly selected .astrea-plan.json file; check fields and version; only --out and --json-diagnostics may accompany it | none | uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures | cli.planfile | MVP |
 | list fixtures/profiles/locales/packs | List IDs versions supported combinations and minimum file counts; --json supported | text | uv run --locked astrea list fixtures --json | cli.list | MVP |
-| validate --input | Check generated files against manifest.json and fixture rules within fixed processing limits | none | uv run --locked astrea validate --input ./fixtures --json-diagnostics | cli.validate | MVP |
+| validate --input | Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules | none | uv run --locked astrea validate --input ./fixtures --json-diagnostics | cli.validate | MVP |
 | --max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes | Allow smaller limits; reject values above the fixed maximums | fixed maximums | --max-message-bytes 1048576 | cli.limits | MVP |
 | --json-diagnostics | Write error code message affected field and limits as JSON to stderr; keep stdout for command results | false | --json-diagnostics | cli.diagnostics | MVP |
 | --version | Print generator fixture catalog and JSON format versions | none | uv run --locked astrea --version | cli.version | MVP |
@@ -215,7 +215,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Offline generation | constraint.network | All templates profiles and assets shipped locally; no SMTP IMAP HTTP DNS or filesystem reads outside configured plan and packaged assets | Network-denied integration generation |
 | Inert content | constraint.links | HTML limited to passive tags and inline styling; no scripts events forms frames remote styles external images or data URIs; href values only https://example.test/... | Allowlist HTML validation and decoded URL checks |
 | Attachments | constraint.assets | Reviewed PNG JPEG PDF TXT CSV only; no executables macros archives decompression bombs EICAR or exploit payloads | Asset inventory SHA-256 sizes media types dimensions and review metadata |
-| Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and --include-stress; mark each file in manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
+| Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and --include-stress; mark each file in batch.astrea-manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
 | Count and bytes | constraint.resources | Max 10000 messages; max 5242880 serialized bytes per message; max 268435456 serialized bytes per batch | Estimate size before writing and count actual bytes while writing; never complete a partial batch |
 | MIME structure | constraint.structure | Normal maximum depth 16; stress maximum depth 64; maximum 1000 MIME parts per email including containers and attached email roots | Count parts and depth without unlimited recursion; check limits while writing |
 | Header budgets | constraint.headers | Max total raw headers across entire message 65536 bytes; max raw single header field 16384 bytes; valid lines at most 998 octets | Count header bytes before completing output; stress headers must still fit byte limits |
@@ -229,6 +229,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Stress expectations | constraint.stress | Content contains no executable code or malware; stress structures may still crash weak parsers; never automatically open generated files | Manifest describes each stress case; run parser tests separately with time and memory limits and no network |
 | Parser test results | constraint.parser | A parser may accept a stress email report a format error or reject it because of limits; it must not crash hang or use excessive memory | Check generator output separately from the behavior of the parser being tested |
 | Output scope | constraint.scope | Generate a folder of .eml files and supporting JSON only; Maildir mbox mailbox export import and delivery are out of scope | No mailbox-format output options export/import commands account access or network delivery commands |
+| Astrea JSON filenames | constraint.filenames | Plans use <name>.astrea-plan.json; manifests use <name>.astrea-manifest.json; future config files use <name>.astrea-<purpose>.<format> with the actual format extension | Check suffix and contents; reject invalid JSON or versions; validation requires exactly one manifest in the batch folder |
 
 ### 04 Generation and test rules
 
@@ -236,7 +237,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and software versions to reproduce a batch. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
 
-Write `.eml` files directly in one output folder with `plan.json` and `manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
+Write `.eml` files directly in one output folder with `batch.astrea-plan.json` and `batch.astrea-manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
 
 See [the complete generation rules](../design-meta/examples/contracts.md).
 

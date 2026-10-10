@@ -1,5 +1,5 @@
 id,command_or_option,phase,default,contract,example
-cli.generate,generate,MVP,core pack; 100 messages; seed 0,Create .eml files directly in a new output folder plus plan.json and manifest.json,uv run --locked astrea generate --out ./fixtures --count 100 --seed 42
+cli.generate,generate,MVP,core pack; 100 messages; seed 0,Create .eml files directly in a new output folder plus batch.astrea-plan.json and batch.astrea-manifest.json,uv run --locked astrea generate --out ./fixtures --count 100 --seed 42
 cli.pack,--pack,MVP,core,Combine named fixture groups; sort the selected cases consistently; stress cases also require --include-stress,--pack core
 cli.fixture,--fixture,MVP,all fixtures in selected packs,Select specific fixture IDs from the chosen packs; reject incompatible selections,--fixture fixture.uk.plain
 cli.count,--count,MVP,100,Number of .eml files including every message in a thread; minimum depends on selected cases; maximum 10000,--count 24
@@ -12,9 +12,9 @@ cli.mode,--mode,MVP,coverage,Coverage includes every selected case; weighted pro
 cli.depth,--depth,MVP,6 for nested normal; 32 for stress depth,Root part has depth 1; normal limit 16; stress limit 64; applies to nested fixtures,--depth 8
 cli.stress,--include-stress,MVP,false,Required when selecting any stress fixture; this flag alone does not select stress cases,--pack stress --include-stress
 cli.plan,plan,MVP,same options as generate,Print the complete generation plan as JSON without creating files,uv run --locked astrea plan --count 24 --seed 42
-cli.planfile,generate --plan,MVP,none,Read a saved JSON plan; reject unsupported versions or fields; only --out and --json-diagnostics may accompany it,uv run --locked astrea generate --plan batch-plan.json --out ./fixtures
+cli.planfile,generate --plan,MVP,none,Read an explicitly selected .astrea-plan.json file; check fields and version; only --out and --json-diagnostics may accompany it,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 cli.list,list fixtures/profiles/locales/packs,MVP,text,List IDs versions supported combinations and minimum file counts; --json supported,uv run --locked astrea list fixtures --json
-cli.validate,validate --input,MVP,none,Check generated files against manifest.json and fixture rules within fixed processing limits,uv run --locked astrea validate --input ./fixtures --json-diagnostics
+cli.validate,validate --input,MVP,none,Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules,uv run --locked astrea validate --input ./fixtures --json-diagnostics
 cli.limits,--max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes,MVP,fixed maximums,Allow smaller limits; reject values above the fixed maximums,--max-message-bytes 1048576
 cli.diagnostics,--json-diagnostics,MVP,false,Write error code message affected field and limits as JSON to stderr; keep stdout for command results,--json-diagnostics
 cli.version,--version,MVP,none,Print generator fixture catalog and JSON format versions,uv run --locked astrea --version

@@ -39,7 +39,7 @@ notes: [
 	markdown: """
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
-A fixture defines a test case. `plan.json` records what to generate. `manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
+A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
@@ -109,7 +109,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 	markdown: """
 Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and software versions to reproduce a batch. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
 
-Write `.eml` files directly in one output folder with `plan.json` and `manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
+Write `.eml` files directly in one output folder with `batch.astrea-plan.json` and `batch.astrea-manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
 
 See [the complete generation rules](../design-meta/examples/contracts.md).
 """,
@@ -118,13 +118,13 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 {
 	name: "astrea.plan",
 	title: "Generation plan example",
-	filepath: "examples/plan.example.json",
+	filepath: "examples/example.astrea-plan.json",
 	labels: ["design", "json"]
 },
 {
 	name: "astrea.manifest",
 	title: "Generated-file manifest example",
-	filepath: "examples/manifest.example.json",
+	filepath: "examples/example.astrea-manifest.json",
 	labels: ["design", "json"]
 }
 ]

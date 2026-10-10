@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-Generate a new folder containing fake `.eml` email files for tests. Include `plan.json` to repeat generation and `manifest.json` to describe the files and their expected properties. Maildir, mbox, mailbox import/export, sending email, and accessing email accounts are out of scope.
+Generate a new folder containing fake `.eml` email files for tests. Include `batch.astrea-plan.json` to repeat generation and `batch.astrea-manifest.json` to describe the files and their expected properties. Maildir, mbox, mailbox import/export, sending email, and accessing email accounts are out of scope.
 
 A **fixture** defines a test case. A **plan** says which cases to generate. A **manifest** lists the files actually generated and what tests should check. See [glossary.csv](glossary.csv) for the other terms used in these specs.
 
@@ -12,8 +12,8 @@ Package the implementation under `src/astrea/` with an `astrea` console command.
 
 ```sh
 uv run --locked astrea list fixtures --json
-uv run --locked astrea plan --count 24 --seed 42 > batch-plan.json
-uv run --locked astrea generate --plan batch-plan.json --out ./fixtures
+uv run --locked astrea plan --count 24 --seed 42 > custom123.astrea-plan.json
+uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 uv run --locked astrea validate --input ./fixtures --json-diagnostics
 uv run --locked astrea generate --pack stress --include-stress --count 20 --out ./parser-stress
 ```
@@ -70,6 +70,18 @@ A parser test may accept the file, report a format error, or reject it because o
 
 Enforce the maximums in `constraints.csv` before and during writing. Count actual bytes, including base64 expansion and deliberate byte edits. Count headers inside all nested parts. Use empty text parts for large sibling-count tests. Avoid algorithms that require unlimited recursion or exponential memory. Users may lower limits but cannot raise the fixed maximums.
 
+## JSON filenames
+
+Use `<name>.astrea-<purpose>.json` for Astrea-owned JSON files. The last extension stays `.json` so editors and tools recognize the format. The prefix is a user-chosen label, such as `custom123` or `example`.
+
+- Plans end in `.astrea-plan.json`, for example `custom123.astrea-plan.json`.
+- Manifests end in `.astrea-manifest.json`, for example `custom123.astrea-manifest.json`.
+- Any future Astrea configuration file follows the same pattern with its own purpose name and real format extension.
+
+Generated batches use `batch.astrea-plan.json` and `batch.astrea-manifest.json` by default. Saved plans may use another prefix. `generate --plan` requires the plan suffix and checks the JSON fields and version; a filename alone does not prove valid contents. `validate --input` finds the single file ending in `.astrea-manifest.json` in the supplied folder and reports an error if none or more than one exists. It checks the contents before using them. It does not scan for plan files; use `generate --plan` to choose a saved plan explicitly.
+
+The `.eml` extension stays unchanged. `app.cue` and `uv.lock` belong to flyb and uv, so their tool-defined names stay unchanged.
+
 ## Output folder and manifest
 
 Write all `.eml` files directly inside the requested output folder:
@@ -79,15 +91,15 @@ fixtures/
   000001-fixture.uk.plain.eml
   000002-fixture.us.pdf.eml
   000003-fixture.ar.notification.eml
-  plan.json
-  manifest.json
+  batch.astrea-plan.json
+  batch.astrea-manifest.json
 ```
 
 This is an ordinary folder, not a mailbox format. Filenames use a six-digit index and the fixture ID. If stress cases are selected, their `.eml` files go in the same folder and are identified by fixture ID and the manifest's `validity` field.
 
-`plan.json` is the saved input: selected fixtures, languages, profiles, seed, dates, counts, and limits. It contains no machine-specific output path.
+`batch.astrea-plan.json` is the saved input: selected fixtures, languages, profiles, seed, dates, counts, and limits. It contains no machine-specific output path.
 
-`manifest.json` is the generated-file index and expected test results. It has one entry per `.eml` file containing:
+`batch.astrea-manifest.json` is the generated-file index and expected test results. It has one entry per `.eml` file containing:
 
 - Relative filename and source fixture ID.
 - Language, header profiles, and normal/stress classification.
@@ -99,7 +111,7 @@ Batch-level fields record software versions, seed, total bytes, and file counts 
 
 For example, `fixture.us.pdf` defines an invoice case. Its manifest entry points to the generated file and says that tests should find one `application/pdf` attachment with a known filename and checksum. The fixture is the definition; the manifest describes its generated instance.
 
-`plan.example.json` and `manifest.example.json` show proposed JSON fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
+`example.astrea-plan.json` and `example.astrea-manifest.json` show proposed JSON fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
 
 Write to a temporary sibling folder first. Check the complete batch, then rename it to the requested output folder. Reject existing destinations, symlinked paths, and path traversal. There is no overwrite option in MVP. On failure, remove only this run's temporary files and leave no completed output folder. Write diagnostics to stderr and command results to stdout.
 

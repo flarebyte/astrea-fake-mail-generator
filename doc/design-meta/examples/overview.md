@@ -6,11 +6,13 @@ The MVP establishes representative multilingual test coverage with UK and US Eng
 
 ## Fixtures, plans, and manifests
 
-A **fixture** is a test-case definition, such as an invoice with one PDF attachment. A **batch plan** records which fixtures and settings to generate. The **manifest** (`manifest.json`) lists each generated `.eml` file, its source fixture, and the expected properties tests can check. It is an index of test files and expected results, not a mailbox format.
+A **fixture** is a test-case definition, such as an invoice with one PDF attachment. A **batch plan** records which fixtures and settings to generate. The **manifest** (`batch.astrea-manifest.json`) lists each generated `.eml` file, its source fixture, and the expected properties tests can check. It is an index of test files and expected results, not a mailbox format.
 
 Example: `fixture.us.pdf` defines the case; `000001-fixture.us.pdf.eml` is one generated email; its manifest entry records the expected PDF filename, type, and checksum.
 
 See [glossary.csv](glossary.csv) for short definitions and examples of the other terms.
+
+Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astrea-plan.json` and manifests end in `.astrea-manifest.json`. A custom label such as `custom123` is allowed; the final `.json` extension identifies the format.
 
 ## Design inputs
 
@@ -23,7 +25,7 @@ See [glossary.csv](glossary.csv) for short definitions and examples of the other
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
 - `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
-- `plan.example.json` and `manifest.example.json`: example version 1 JSON documents for a single plain-text message. Zero hashes are placeholders, not reference test checksums.
+- `example.astrea-plan.json` and `example.astrea-manifest.json`: example version 1 JSON documents for a single plain-text message. Zero hashes are placeholders, not reference test checksums.
 
 CSV IDs remain stable. Semicolon-separated cells are ordered lists, not additional CSV columns. Fixture rows with multiple locales expand into distinct variants. MIME shape notation describes children in file order: `mixed`, `alternative`, and `related` mean `multipart/*`; `plain`, `html`, and attachment labels mean parts with no children. These files are the source specifications; `app.cue` assembles them into `doc/design/specification.md`.
 
