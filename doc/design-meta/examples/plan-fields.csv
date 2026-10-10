@@ -12,13 +12,13 @@ plan.fixtures,selection.fixtures,[],Required list of fixture IDs; empty selects 
 plan.locales,selection.locales,[],Required list of locale codes; empty uses all declared language variants; unknown or incompatible selections fail
 plan.client,selection.client_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
 plan.provider,selection.provider_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
-plan.parameters,fixture_parameters,{},Required map from selected fixture IDs to settings such as depth mutation_id or encoding; reject unknown fields and unused fixture IDs
-plan.depth,fixture_parameters.<fixture_id>.depth,6 normal; 32 stress,Optional nesting depth for the selected depth fixture; root depth 1; normal maximum 16; stress maximum 64
+plan.parameters,fixture_parameters,{},Required map from selected fixture IDs to supported settings in fixture-parameters.csv; reject unknown parameters and unselected fixture IDs
+plan.depth,fixture_parameters.<fixture_id>.depth,6 normal; 32 stress,Optional depth for fixture.uk.nested (2..16) or fixture.stress.depth (17..64); root depth 1; must fit limits.max_depth
 plan.messagebytes,limits.max_message_bytes,5242880,Required serialized byte limit per email; users may lower it
 plan.batchbytes,limits.max_batch_bytes,268435456,Required total serialized email byte limit; users may lower it
 plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixtures still limited to 16; users may lower it
 plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it
 plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it
-plan.messages,messages,absent in editable templates,Optional computed file list in saved output plans; every entry includes period_id and date; derive from settings and check exact counts per period
+plan.messages,messages,absent in editable templates,Optional computed file list in saved plans; entries contain index period_index period_id date fixture_id locale profiles occurrence thread_member_index and resolved parameters; validate against plan settings
 plan.domains,domains,[example.test;newletter.test;blue.test],Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization
 plan.domainfile,domain_file,absent,Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains

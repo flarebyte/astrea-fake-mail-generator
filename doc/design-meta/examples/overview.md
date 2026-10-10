@@ -27,10 +27,12 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `glossary.csv`: terms used in the specs, with definitions and examples.
 - `tech.csv`: selected runtime, development, and documentation technologies with rationale and official references.
 - `features.csv`: stable feature IDs, delivery phases, contracts, and acceptance criteria.
+- `fixture-parameters.csv`: supported MVP fixture settings, allowed values, and stress-variant defaults.
 - `fixtures.csv`: concrete fixture/use-case catalog, MIME shapes, locales, profile pairings, and assertions.
 - `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
+- `stress.astrea-plan.json`: opt-in parser stress cases with explicit depth and sibling part-count settings.
 - `nested.astrea-plan.json`: example `fixture_parameters` setting MIME depth to 8 for the selected nested fixture.
 - `outlook.astrea-plan.json`: January and February emails with explicit Outlook desktop and Outlook provider header profiles; includes PDF invoices, forwarded messages, and Spanish travel confirmations.
 - `monthly.astrea-plan.json`: a complete plan for January (30 emails) and February (55 emails), using ISO date ranges.

@@ -130,7 +130,8 @@
         "attachments": [],
         "thread": null,
         "stress": null
-      }
+      },
+      "parameters": {}
     }
   ]
 }

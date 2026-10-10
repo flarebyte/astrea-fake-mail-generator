@@ -17,7 +17,8 @@ reports: [{
 ] },
 { title: "02 Fixture coverage", sections: [
 { title: "01 Fixture and use-case catalog", notes: ["astrea.fixtures"] },
-{ title: "02 Client and provider profiles", notes: ["astrea.profiles"] }
+{ title: "02 Client and provider profiles", notes: ["astrea.profiles"] },
+{ title: "03 Fixture parameters", notes: ["astrea.fixtureparameters"] }
 ] },
 { title: "03 Implementation rules", sections: [
 { title: "01 Technology choices", notes: ["astrea.tech"] },
@@ -27,7 +28,7 @@ reports: [{
 { title: "05 Generation and test rules", notes: ["astrea.contracts"] }
 ] },
 { title: "04 Payload examples", sections: [
-{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan", "astrea.outlookplan", "astrea.nestedplan"] },
+{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan", "astrea.outlookplan", "astrea.nestedplan", "astrea.stressplan"] },
 { title: "02 File-based domain list example", notes: ["astrea.domainfile", "astrea.domainplan"] },
 { title: "03 Generated-file manifest example", notes: ["astrea.manifest", "astrea.referenceemail"] }
 ] }
@@ -78,6 +79,13 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 	filepath: "examples/fixtures.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
+},
+{
+ name: "astrea.fixtureparameters",
+ title: "Supported fixture parameters",
+ filepath: "examples/fixture-parameters.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
 },
 {
 	name: "astrea.regions",
@@ -148,6 +156,12 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
  name: "astrea.nestedplan",
  title: "Plan with fixture-specific nesting depth",
  filepath: "examples/nested.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.stressplan",
+ title: "Opt-in parser stress plan",
+ filepath: "examples/stress.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
