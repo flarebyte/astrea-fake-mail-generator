@@ -54,6 +54,28 @@ The plan generates PDF invoices, forwarded emails, and Spanish travel confirmati
 uv run --locked astrea generate --plan doc/design-meta/examples/outlook.astrea-plan.json --out ./outlook-fixtures
 ```
 
+## Example with fixture parameters
+
+`fixture_parameters` is an object keyed by fixture ID. Each value contains settings supported by that fixture. It changes how a selected fixture generates emails; it does not select the fixture itself.
+
+`nested.astrea-plan.json` selects `fixture.uk.plain` and `fixture.uk.nested`, then customizes only the nested fixture:
+
+```json
+"fixture_parameters": {
+  "fixture.uk.nested": {
+    "depth": 8
+  }
+}
+```
+
+The plan generates 30 emails in January. Each nested email has a maximum MIME depth of 8 instead of the default 6. Plain-text emails keep their normal settings. These parameters apply to every occurrence of that fixture across all periods in the plan.
+
+`depth` is the requested structure; `limits.max_depth` is the allowed ceiling. This example sets the ceiling to 16. Reject a depth above that ceiling, a parameter unsupported by the fixture, or parameters for a fixture that was not selected. An empty `fixture_parameters` object uses fixture defaults.
+
+```sh
+uv run --locked astrea generate --plan doc/design-meta/examples/nested.astrea-plan.json --out ./nested-fixtures
+```
+
 ## Titled date periods
 
 A plan can generate different email counts for several periods:

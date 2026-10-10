@@ -29,3 +29,5 @@ Set allowed domains using either a `domains` JSON array in the plan or `domain_f
 A plan can contain titled ISO date periods with exact counts, such as January 30 emails and February 55 emails. See [the monthly example](doc/design-meta/examples/monthly.astrea-plan.json). Each email's Date falls within its period; all 85 files go in the same output folder.
 
 See [the Outlook example plan](doc/design-meta/examples/outlook.astrea-plan.json) for explicit client and provider profiles, using PDF invoice, forwarded-email, and Spanish confirmation fixtures.
+
+See [the nested email example plan](doc/design-meta/examples/nested.astrea-plan.json) for `fixture_parameters` that sets MIME depth to 8 for one selected fixture.
