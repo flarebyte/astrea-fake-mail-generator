@@ -10,7 +10,7 @@ The MVP establishes representative multilingual test coverage with UK and US Eng
 uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 ```
 
-All generation settings come from the plan: file count, fixture selection, languages, headers, seed, dates, nesting depth, stress cases, and limits. The command only selects the plan, output folder, and optional JSON error reporting. Use `astrea plan --template core` to get an editable starter plan.
+All generation settings come from the plan: file count, fixture selection, languages, headers, domains, seed, dates, nesting depth, stress cases, and limits. The command only selects the plan, output folder, and optional JSON error reporting. Use `astrea plan --template core` to get an editable starter plan.
 
 ## Fixtures, plans, and manifests
 
@@ -31,6 +31,8 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
+- `example.astrea-domains.txt`: one allowed test domain per line; plans can use this file or an inline `domains` array.
+- `file-domains.astrea-plan.json`: example plan using the text-file domain source.
 - `plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.
 - `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
@@ -40,7 +42,7 @@ CSV IDs remain stable. Semicolon-separated cells are ordered lists, not addition
 
 ## Safety and parser robustness
 
-All content is invented, all email identities use reserved `.test` domains, and all assets are reviewed and inert. Templates resemble everyday messages without copying private correspondence or generating real payment details. Provider-style headers are synthetic examples, not authenticated correspondence or a promise of exact vendor behavior.
+All content is invented, all email identities use configured `.test` domains from an inline plan array or a one-domain-per-line text file, and all assets are reviewed and inert. Templates resemble everyday messages without copying private correspondence or generating real payment details. Provider-style headers are synthetic examples, not authenticated correspondence or a promise of exact vendor behavior.
 
 “Safe content” and “safe to feed to every parser” are different guarantees. Opt-in stress fixtures intentionally exercise structural weaknesses: recursion, large sibling lists, malformed boundaries, duplicate headers, decoder recovery, truncation, and dangerous advertised attachment filenames. These contain no exploit code, malware, executable attachments, remote resources, or decompression bombs. A vulnerable parser can still crash or exhaust its resources. The CLI creates these files without automatically opening them; downstream tests should process them in isolated, bounded subprocesses.
 

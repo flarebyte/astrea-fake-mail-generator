@@ -10,7 +10,7 @@ Python CLI that generates repeatable folders of safe .eml test files, including 
 
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
-Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format.
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
 
 A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
@@ -52,6 +52,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | MIME_MISSING_CLOSE | glossary.mutationcode | An Astrea identifier for a deliberate format error. A parser may use a different error name. | Anomaly code |
 | uv.lock plus an exact Python patch version | glossary.version | Exact Python dependency template and profile versions recorded to make generation repeatable. | Pinned software versions |
 | Core multilingual fixtures and bounded stress fixtures | glossary.mvp | The first supported release. Phase 2 Phase 3 and Later describe follow-up work. | MVP |
+| example.test; newletter.test; blue.test | glossary.domains | Allowed fake hostnames for addresses email identifiers delivery headers and URL examples. Set domains in the plan or read a text file through domain_file. | Domain list |
 
 ### 03 CLI features
 
@@ -82,6 +83,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Detect changed or missing files; check planned errors in stress cases without unbounded parsing | Check file checksums attachment contents expected headers selected cases and normal MIME structure | Check a generated batch | feature.validate | MVP | must |
 | Exit 0 for success; 2 for invalid requests; 1 for file-access errors or failed output checks | Return stable error codes; optionally write error details as JSON | Useful CLI errors | feature.errors | MVP | must |
 | JSON output is repeatable for the same inputs | List available fixtures profiles languages packs and limits; show a generation plan without writing emails | List options and preview a batch | feature.inspect | MVP | must |
+| Same normalized domain list yields identical output from either source; only configured domains appear; replay needs no external file | Read domains from a plan JSON array or a local text file with one .test domain per line; assign them repeatably across email fields | Configurable test domains | feature.domains | MVP | must |
 
 ### 04 Regional coverage roadmap
 
@@ -151,11 +153,11 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Illustrative subset; verify against sanitized samples before claiming version accuracy | Versioned placeholder X-Mailer and repeatable synthetic threading fields | client.outlook-desktop.v1 | X-Mailer;Thread-Index;Thread-Topic | client | MVP | provider.outlook.v1;provider.generic.v1 |
 | Illustrative desktop subset; not a full header fingerprint | Synthetic User-Agent version and locale-derived Content-Language | client.thunderbird.v1 | User-Agent;Content-Language | client | MVP | provider.generic.v1;provider.gmail.v1;provider.outlook.v1 |
 | Illustrative subset | Versioned synthetic value and raw header casing | client.apple-mail.v1 | X-Mailer;Mime-Version | client | Phase 2 | provider.generic.v1 |
-| Synthetic delivery trace | Two fixed delivery steps using reserved IPs and .test domains | provider.generic.v1 | Return-Path;Received | provider | MVP | client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1 |
-| Synthetic provider-style shape; no real signatures or authentication claims | Placeholder values and example.test authentication identity | provider.gmail.v1 | Received;X-Received;Authentication-Results;X-Google-Smtp-Source | provider | MVP | client.gmail-web.v1;client.generic.v1;client.thunderbird.v1 |
+| Synthetic delivery trace | Two fixed delivery steps using reserved IPs and configured .test domains | provider.generic.v1 | Return-Path;Received | provider | MVP | client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1 |
+| Synthetic provider-style shape; no real signatures or authentication claims | Placeholder values and an authentication identity using a configured .test domain | provider.gmail.v1 | Received;X-Received;Authentication-Results;X-Google-Smtp-Source | provider | MVP | client.gmail-web.v1;client.generic.v1;client.thunderbird.v1 |
 | Synthetic provider-style shape; verify exact values against sanitized samples | Stable synthetic internal/external and SCL cases labeled in manifest | provider.outlook.v1 | Received;Authentication-Results;X-MS-Exchange-Organization-AuthAs;X-MS-Exchange-Organization-SCL | provider | MVP | client.outlook-desktop.v1;client.generic.v1;client.thunderbird.v1 |
 | Illustrative subset | Random-looking placeholder value controlled by the seed | provider.yahoo.v1 | Received;X-YMail-OSG | provider | Phase 2 | client.generic.v1 |
-| Illustrative subset | Reserved-domain identity and trace ordering | provider.fastmail.v1 | Received;Authentication-Results | provider | Phase 2 | client.generic.v1;client.thunderbird.v1 |
+| Illustrative subset | Configured .test domain identity and delivery-header ordering | provider.fastmail.v1 | Received;Authentication-Results | provider | Phase 2 | client.generic.v1;client.thunderbird.v1 |
 | No fetched or unreviewed provider dumps | Reject uncontrolled raw headers outside stress mutation layer | provider.custom.v1 | Reviewed versioned local profile | provider | Later | compatibility-registry |
 
 ## 03 Implementation rules
@@ -170,7 +172,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Dependency setup may use network; fixture generation must be offline | selected | tech.uv | MVP | Use pyproject.toml and uv.lock; uv run --locked astrea | https://docs.astral.sh/uv/concepts/projects/run/ | Environment and invocation | uv |
 | Validate all choices and bounds before writes | selected | tech.argparse | MVP | Subcommands and stable help without a CLI framework dependency | https://docs.python.org/3/library/argparse.html | CLI parsing | argparse (stdlib) |
 | Fix line endings header order wrapping encodings and boundaries; edit file bytes directly for malformed cases | selected | tech.email | MVP | EmailMessage and BytesGenerator with explicit policy | https://docs.python.org/3/library/email.html | Build and write MIME emails | email (stdlib) |
-| Pin version; never use uncontrolled email/url/phone/address providers; record fallback language used by Faker | selected | tech.faker | MVP | Seeded locale providers supplement curated body templates | https://faker.readthedocs.io/en/stable/ | Localized synthetic names and organizations | Faker |
+| Pin version; generate email addresses and URL hosts only from configured .test domains; no real contact details; record fallback language used by Faker | selected | tech.faker | MVP | Seeded locale providers supplement curated body templates | https://faker.readthedocs.io/en/stable/ | Localized synthetic names and organizations | Faker |
 | Faker lorem is not a substitute for natural localized sentences; no external template execution | selected | tech.templates | MVP | Small reviewed templates for receipts newsletters conversations and notifications | https://docs.python.org/3/library/html.html | Realistic body content | Curated UTF-8 templates plus html.escape (stdlib) |
 | No remote downloads; PDFs have no JavaScript actions links forms or embedded files; images have bounded dimensions | selected | tech.assets | MVP | Reviewed passive assets reused byte-for-byte with checksums | project-owned-assets | Attachments | Packaged PNG JPEG PDF TXT CSV assets |
 | Reject unknown fields; write UTF-8 JSON in a consistent format | selected | tech.json | MVP | Versioned JSON formats and typed Python data models | https://docs.python.org/3/library/json.html | Batch plans and manifest | json and dataclasses (stdlib) |
@@ -223,6 +225,8 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | limits.max_parts | plan.parts | Required total MIME part limit per email including containers; users may lower it | 1000 |
 | limits.max_header_bytes | plan.headers | Required total header byte limit per email including nested headers; users may lower it | 65536 |
 | messages | plan.messages | Optional computed file list in saved output plans; derive it from selections and validate it against them if present | absent in editable templates |
+| domains | plan.domains | Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization | [example.test;newletter.test;blue.test] |
+| domain_file | plan.domainfile | Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains | absent |
 
 ### 04 Safety and generation limits
 
@@ -230,9 +234,9 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | area | id | rule | verification |
 | --- | --- | --- | --- |
-| Synthetic identities | constraint.identity | All addresses and message IDs use example.test; subdomains also end .test; no real users credentials phone numbers or payment details | Scan decoded headers bodies and assets against approved template values |
-| Offline generation | constraint.network | All templates profiles and assets shipped locally; no SMTP IMAP HTTP DNS or filesystem reads outside configured plan and packaged assets | Network-denied integration generation |
-| Inert content | constraint.links | HTML limited to passive tags and inline styling; no scripts events forms frames remote styles external images or data URIs; href values only https://example.test/... | Allowlist HTML validation and decoded URL checks |
+| Synthetic identities | constraint.identity | Use only domains from the plan inline array or domain_file; each domain must end in .test; no real users credentials phone numbers or payment details | Check generated addresses Message-ID domains Content-IDs delivery hostnames authentication examples and URL hosts against the normalized domain list |
+| Offline generation | constraint.network | Templates profiles and attachments are packaged locally; read only the selected plan and optional local domain_file as configuration; no SMTP IMAP HTTP or DNS access | Network-denied integration generation |
+| Inert content | constraint.links | HTML limited to passive tags and inline styling; no scripts events forms frames remote styles external images or data URIs; href values use https and a configured .test domain | Allowlist HTML validation and decoded URL checks |
 | Attachments | constraint.assets | Reviewed PNG JPEG PDF TXT CSV only; no executables macros archives decompression bombs EICAR or exploit payloads | Asset inventory SHA-256 sizes media types dimensions and review metadata |
 | Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and include_stress: true in the plan; mark each file in batch.astrea-manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
 | Count and bytes | constraint.resources | Max 10000 messages; max 5242880 serialized bytes per message; max 268435456 serialized bytes per batch | Estimate size before writing and count actual bytes while writing; never complete a partial batch |
@@ -248,7 +252,8 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Stress expectations | constraint.stress | Content contains no executable code or malware; stress structures may still crash weak parsers; never automatically open generated files | Manifest describes each stress case; run parser tests separately with time and memory limits and no network |
 | Parser test results | constraint.parser | A parser may accept a stress email report a format error or reject it because of limits; it must not crash hang or use excessive memory | Check generator output separately from the behavior of the parser being tested |
 | Output scope | constraint.scope | Generate a folder of .eml files and supporting JSON only; Maildir mbox mailbox export import and delivery are out of scope | No mailbox-format output options export/import commands account access or network delivery commands |
-| Astrea JSON filenames | constraint.filenames | Plans use <name>.astrea-plan.json; manifests use <name>.astrea-manifest.json; future config files use <name>.astrea-<purpose>.<format> with the actual format extension | Check suffix and contents; reject invalid JSON or versions; validation requires exactly one manifest in the batch folder |
+| Astrea JSON filenames | constraint.filenames | Plans use <name>.astrea-plan.json; manifests use <name>.astrea-manifest.json; domain lists use <name>.astrea-domains.txt; future config files retain the actual format extension | Check suffix and contents; reject invalid JSON or versions; validation requires exactly one manifest in the batch folder |
+| Domain configuration | constraint.domains | Provide exactly one of domains or domain_file; normalize lowercase and trim whitespace; reject empty lists duplicate domains invalid hostnames and names outside .test | Test inline and file sources; saved plans embed the normalized list so replay needs no external domain file |
 
 ### 05 Generation and test rules
 
@@ -296,11 +301,63 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
     "client_profile": null,
     "provider_profile": null
   },
-  "fixture_parameters": {}
+  "fixture_parameters": {},
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ]
 }
 ```
 
-### 02 Generated-file manifest example
+### 02 File-based domain list example
+
+#### One domain per line
+
+```txt
+example.test
+newletter.test
+blue.test
+```
+
+#### Plan using a domain file
+
+```json
+{
+  "schema_version": 1,
+  "catalog_version": "1",
+  "generator_version": "0.1.0-example",
+  "seed": 42,
+  "base_date": "2025-01-15T12:00:00Z",
+  "mode": "coverage",
+  "count": 1,
+  "include_stress": false,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 64,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "selection": {
+    "packs": [
+      "core"
+    ],
+    "fixtures": [
+      "fixture.uk.plain"
+    ],
+    "locales": [
+      "en_GB"
+    ],
+    "client_profile": null,
+    "provider_profile": null
+  },
+  "fixture_parameters": {},
+  "domain_file": "example.astrea-domains.txt"
+}
+```
+
+### 03 Generated-file manifest example
 
 #### Generated-file manifest example
 
@@ -369,9 +426,9 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
           ],
           "decoded_values": {
             "From": "Morgan Ellis <morgan@example.test>",
-            "To": "Alex Lane <alex@example.test>",
+            "To": "Alex Lane <alex@newletter.test>",
             "Subject": "Meeting on Friday",
-            "Message-ID": "<astrea-example-1@example.test>"
+            "Message-ID": "<astrea-example-1@blue.test>"
           },
           "counts": {
             "Received": 2,
@@ -409,7 +466,12 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
     "python": "PIN_EXACT_PATCH",
     "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "faker": "PIN_EXACT_VERSION"
-  }
+  },
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ]
 }
 ```
 

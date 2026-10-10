@@ -27,3 +27,4 @@ glossary.malformed,Malformed email,An email that deliberately breaks a format ru
 glossary.mutationcode,Anomaly code,An Astrea identifier for a deliberate format error. A parser may use a different error name.,MIME_MISSING_CLOSE
 glossary.version,Pinned software versions,Exact Python dependency template and profile versions recorded to make generation repeatable.,uv.lock plus an exact Python patch version
 glossary.mvp,MVP,The first supported release. Phase 2 Phase 3 and Later describe follow-up work.,Core multilingual fixtures and bounded stress fixtures
+glossary.domains,Domain list,Allowed fake hostnames for addresses email identifiers delivery headers and URL examples. Set domains in the plan or read a text file through domain_file.,example.test; newletter.test; blue.test

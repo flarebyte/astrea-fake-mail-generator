@@ -20,3 +20,5 @@ plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixture
 plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it
 plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it
 plan.messages,messages,absent in editable templates,Optional computed file list in saved output plans; derive it from selections and validate it against them if present
+plan.domains,domains,[example.test;newletter.test;blue.test],Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization
+plan.domainfile,domain_file,absent,Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains

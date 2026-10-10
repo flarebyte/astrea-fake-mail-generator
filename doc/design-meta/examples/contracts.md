@@ -21,7 +21,7 @@ uv run --locked astrea plan --template stress > parser-tests.astrea-plan.json
 uv run --locked astrea generate --plan parser-tests.astrea-plan.json --out ./parser-stress
 ```
 
-Implementation steps: check arguments, select supported fixtures, plan the files, build email parts, write email bytes, apply any requested format errors, check the results, and complete the output folder. Check client/provider profile combinations and fixture requirements before writing files.
+Implementation steps: check arguments, select supported fixtures, plan the files, build email parts, write email bytes, apply any requested format errors, check the results, and complete the output folder. Check client/provider profile combinations, fixture requirements, and the domain list before writing files.
 
 ## Plan-driven generation
 
@@ -52,6 +52,36 @@ Phase 2 adds weighted proportions. Use integer weights, round allocations to who
 The plan’s `selection.locales` selects existing language variants; it does not automatically translate fixtures. Reject incompatible selections rather than silently ignoring them. Empty fixture or locale lists mean all supported cases within the selected packs, not all cases in the entire catalog.
 
 Reject unknown JSON fields, unsupported versions, unavailable fixture/profile/error IDs, and conflicting settings. Derive expected test results from the fixture definitions rather than trusting values supplied in a plan.
+
+## Configurable test domains
+
+Provide exactly one of these fields in the plan:
+
+```json
+"domains": ["example.test", "newletter.test", "blue.test"]
+```
+
+or:
+
+```json
+"domain_file": "example.astrea-domains.txt"
+```
+
+The text file is UTF-8 with one domain per line:
+
+```text
+example.test
+newletter.test
+blue.test
+```
+
+Resolve a relative file path from the folder containing the plan, not from the shell's working folder. Read the file once before planning. Ignore blank lines, trim surrounding whitespace, and convert domains to lowercase. Preserve input order. Comments are not supported. Reject an empty list, duplicate domains after normalization, invalid DNS hostnames, URLs, email addresses, wildcard names, trailing dots, and domains outside `.test`. Each JSON item must be a string. Use ASCII DNS labels; a label may contain letters, digits, and internal hyphens, has at most 63 characters, and cannot start or end with a hyphen. The full hostname is at most 253 characters and must contain a label before `.test`. Allow names such as `mail.blue.test`, but use only explicitly listed names rather than inventing subdomains. Limit the source to 1000 domains and a 64 KiB text file.
+
+Use the list for sender/recipient addresses, Message-ID domains, Content-IDs, simulated delivery hostnames, authentication examples, and URL hosts. Client/provider names describe header styles; they do not force actual vendor domains. Existing `example.test` values in examples illustrate one allowed domain, not a hardcoded rule.
+
+Assign domains by cycling through the ordered list using `(email_index + role_offset) % domain_count`, where `email_index` is zero-based. Fixed role offsets are sender 0, recipient 1, Message-ID 2, Content-ID 3, delivery hostname 4 plus hop index, authentication identity 0, and URL host 1. Multiple values in the same role add their zero-based position to the offset. This produces varied but predictable domains. Keep thread participant addresses consistent by using the first email's index for participant fields across the thread. Record actual values in the manifest. A small batch need not use every domain. The same normalized list must produce identical output whether it came from JSON or text.
+
+The saved batch plan replaces `domain_file` with the normalized `domains` array. Include that array in the manifest too. This makes replay independent of the original text file and records the domains that were actually used. Changing the input file affects a new run, never an already saved batch plan. A missing or unreadable source file is an error before any output is written. There are no CLI domain overrides.
 
 ## Making output repeatable
 
@@ -93,6 +123,7 @@ Use `<name>.astrea-<purpose>.json` for Astrea-owned JSON files. The last extensi
 
 - Plans end in `.astrea-plan.json`, for example `custom123.astrea-plan.json`.
 - Manifests end in `.astrea-manifest.json`, for example `custom123.astrea-manifest.json`.
+- Domain lists end in `.astrea-domains.txt`, for example `custom123.astrea-domains.txt`.
 - Any future Astrea configuration file follows the same pattern with its own purpose name and real format extension.
 
 Generated batches use `batch.astrea-plan.json` and `batch.astrea-manifest.json` by default. Saved plans may use another prefix. `generate --plan` requires the plan suffix and checks the JSON fields and version; a filename alone does not prove valid contents. `validate --input` finds the single file ending in `.astrea-manifest.json` in the supplied folder and reports an error if none or more than one exists. It checks the contents before using them. It does not scan for plan files; use `generate --plan` to choose a saved plan explicitly.
@@ -114,7 +145,7 @@ fixtures/
 
 This is an ordinary folder, not a mailbox format. Filenames use a six-digit index and the fixture ID. If stress cases are selected, their `.eml` files go in the same folder and are identified by fixture ID and the manifest's `validity` field.
 
-`batch.astrea-plan.json` saves the complete generation settings and the computed `messages` list. It contains selected fixtures, languages, profiles, seed, dates, count, fixture parameters, and limits. It contains no machine-specific output path.
+`batch.astrea-plan.json` saves the complete generation settings and the computed `messages` list. It contains selected fixtures, languages, profiles, seed, dates, count, fixture parameters, limits, and the normalized domain list. External domain-file references are replaced by the inline list. It contains no machine-specific output path.
 
 `batch.astrea-manifest.json` is the generated-file index and expected test results. It has one entry per `.eml` file containing:
 
@@ -128,7 +159,7 @@ Batch-level fields record software versions, seed, total bytes, and file counts 
 
 For example, `fixture.us.pdf` defines an invoice case. Its manifest entry points to the generated file and says that tests should find one `application/pdf` attachment with a known filename and checksum. The fixture is the definition; the manifest describes its generated instance.
 
-`example.astrea-plan.json` and `example.astrea-manifest.json` show proposed JSON fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
+`example.astrea-plan.json` shows inline domains; `file-domains.astrea-plan.json` shows a local domain-file reference. `example.astrea-domains.txt` contains the matching text list. `example.astrea-manifest.json` shows proposed output fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
 
 Write to a temporary sibling folder first. Check the complete batch, then rename it to the requested output folder. Reject existing destinations, symlinked paths, and path traversal. There is no overwrite option in MVP. On failure, remove only this run's temporary files and leave no completed output folder. Write diagnostics to stderr and command results to stdout.
 

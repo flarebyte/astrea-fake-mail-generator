@@ -27,5 +27,10 @@
     "client_profile": null,
     "provider_profile": null
   },
-  "fixture_parameters": {}
+  "fixture_parameters": {},
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ]
 }

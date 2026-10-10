@@ -62,9 +62,9 @@
           ],
           "decoded_values": {
             "From": "Morgan Ellis <morgan@example.test>",
-            "To": "Alex Lane <alex@example.test>",
+            "To": "Alex Lane <alex@newletter.test>",
             "Subject": "Meeting on Friday",
-            "Message-ID": "<astrea-example-1@example.test>"
+            "Message-ID": "<astrea-example-1@blue.test>"
           },
           "counts": {
             "Received": 2,
@@ -102,5 +102,10 @@
     "python": "PIN_EXACT_PATCH",
     "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "faker": "PIN_EXACT_VERSION"
-  }
+  },
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ]
 }
