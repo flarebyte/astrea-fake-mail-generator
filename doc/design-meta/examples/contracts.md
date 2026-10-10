@@ -1,8 +1,14 @@
-# CLI and fixture contracts
+# Generation rules
 
-## Packaging and workflow
+## Purpose and scope
 
-Use a `src/astrea/` Python package with the `astrea` console script. Configure Python 3.12 or newer, commit `uv.lock`, and record the exact interpreter patch used for golden fixtures. `uv sync --locked` prepares dependencies; generation itself is offline. Packaged templates and assets must work when installed outside this repository. Proposed examples:
+Generate a new folder containing fake `.eml` email files for tests. Include `plan.json` to repeat generation and `manifest.json` to describe the files and their expected properties. Maildir, mbox, mailbox import/export, sending email, and accessing email accounts are out of scope.
+
+A **fixture** defines a test case. A **plan** says which cases to generate. A **manifest** lists the files actually generated and what tests should check. See [glossary.csv](glossary.csv) for the other terms used in these specs.
+
+## Running the CLI
+
+Package the implementation under `src/astrea/` with an `astrea` console command. Use Python 3.12 or newer and commit `uv.lock`. Record the exact Python version used for repeatable reference files. Installing dependencies may require networking; generating emails must work offline. Templates and attachments must be included in the installed package.
 
 ```sh
 uv run --locked astrea list fixtures --json
@@ -12,61 +18,93 @@ uv run --locked astrea validate --input ./fixtures --json-diagnostics
 uv run --locked astrea generate --pack stress --include-stress --count 20 --out ./parser-stress
 ```
 
-The CLI has layers for argument validation, catalog resolution, planning, semantic message construction, byte serialization, bounded raw mutations, validation, and atomic output publication. Client profiles govern composition hints; provider profiles govern synthetic delivery trace headers. Validate fixture requirements as well as profile pairings before writing. A profile override that removes a fixture's required headers is an error.
+Implementation steps: check arguments, select supported fixtures, plan the files, build email parts, write email bytes, apply any requested format errors, check the results, and complete the output folder. Check client/provider profile combinations and fixture requirements before writing files.
 
-## Planning and exact coverage
+## Selecting cases and counting files
 
-Resolve pack, fixture, locale, client, and provider selections against a versioned catalog. MVP ships only MVP rows; selecting a future-phase row fails clearly. Regional delivery stages describe release scope; regions within a stage have equal standing. The MVP core pack includes Japanese (ja_JP) and Arabic (ar_EG) alongside English and European Latin-script fixtures. Coverage planning sorts expanded variants by fixture ID then locale then profile IDs for stable tie breaking, independent of CSV row order.
+Only fixtures marked MVP are available in the first release. The core pack covers English, European Latin-script languages, Japanese (`ja_JP`), and Arabic (`ar_EG`). Later releases add more languages and cases.
 
-An expanded fixture variant is a coverage unit. Most units produce one wire message; `fixture.uk.thread` produces an atomic group of three. The core pack has 15 units and a minimum of 17 wire messages. Count includes all group members, not just top-level scenarios. A coverage request below the selected units' minimum fails with `E_COVERAGE_COUNT` and the required count. After one of each unit, cycle the stable order, adding only complete groups that fit the remaining count. Continue scanning for a fitting group; fail if none fits. A thread-only request must therefore have a count divisible by three. Do not truncate threads or silently reduce count. Weighted mode in Phase 2 allocates unit groups with the same exact-count constraint; reject unrepresentable allocations.
+Each supported language or format-error variant is a separate test case. Sort selected cases by fixture ID, locale, and profile IDs so CSV row order does not change the result.
 
-`--locale` is a strict filter of declared locale variants, not permission to translate every fixture automatically. Explicit selections that cannot all be satisfied fail. A supplied plan is fully resolved and cannot be combined with generation selectors. Reject unknown fields, unsupported schema/catalog/profile versions, unknown mutation IDs, and contradictory expectations. Regenerate derived expectations from catalog rules rather than trusting arbitrary plan values. `plan` emits no wall-clock values or machine-specific paths.
+Coverage mode generates every selected case once before repeating cases. The core pack contains 15 cases and needs at least 17 `.eml` files: most cases produce one file, while `fixture.uk.thread` produces three. `--count` counts files, including every email in a thread.
 
-Derive per-message and per-component seeds from SHA-256 over canonical JSON containing schema version, batch seed, fixture ID, locale, occurrence, thread member index, and component namespace. Normalize strings to NFC except fixtures explicitly testing another form. Never use Python `hash()`, global random state, wall clock, hostnames, OS locale, or filesystem enumeration order. Message identities use deterministic `example.test` addresses. Thread IDs remain stable as count grows; record generation revisions so library or template updates are deliberate fixture migrations.
+After generating each case, repeat cases in the same order until the requested count is reached. Keep thread groups complete. Skip a group if it cannot fit the remaining count and try the next case. If no complete group fits, return `E_COVERAGE_COUNT`. A thread-only batch must have a count divisible by three. Never silently drop cases, cut a thread short, or change the requested count.
 
-## Serialization and structural assertions
+Phase 2 adds weighted proportions. Use integer weights, round allocations to whole case groups, and use fixture IDs to break ties. Reject a request if its count cannot be met with complete groups.
 
-Normal messages use RFC 5322 headers and MIME media types. Use bytes serialization, explicit policy, CRLF, a deterministic header order, fixed folding rules, deterministic multipart boundaries, fixed transfer encodings, and explicit charset. The default is UTF-8 body content with RFC 2047 encoding for non-ASCII display names and subjects. RFC 6532 raw UTF-8 headers are a later explicit profile, not the default. Boundary generation must detect collisions with payload bytes deterministically. Valid headers obey wire line limits. Date uses a fixed UTC base instant, a one-minute increment per global message index, and a recorded offset; provider trace hops are fixed offsets relative to Date. For MVP use fixed winter timezone mappings and record the mapping revision. Later timezone/DST coverage must pin timezone data and record its revision.
+`--locale` selects existing language variants; it does not automatically translate fixtures. Reject incompatible filters rather than silently ignoring them. A saved plan already contains all choices, so only output location and diagnostic format may be added to `generate --plan`.
 
-MIME root path is `1`, first child `1.1`, and subsequent siblings follow wire order. Embedded `message/rfc822` roots count as contained nodes, including their own headers. Record every node's path, depth, media type, charset, disposition, content ID, transfer encoding, and decoded hash where applicable. Root depth is 1; total node count includes multipart containers and embedded messages. The regular nested fixture has a linear `multipart/mixed` chain ending in `multipart/alternative(plain;html)`; requested depth includes the final text leaves. To realize depth 2 the root is directly `multipart/alternative`. Increasing depth wraps this root with `depth - 2` mixed containers. Stress depth uses the same construction. Normal limits are 16 levels; stress limits are 64.
+Reject unknown JSON fields, unsupported versions, unavailable fixture/profile/error IDs, and conflicting settings. Derive expected test results from the fixture definitions rather than trusting values supplied in a plan.
 
-Raw assertions preserve header order, exact casing when profiled, multiplicity, byte ranges, folding, transfer encoding, and boundary values. Semantic assertions independently record decoded subject/body facts, recipients, content IDs, attachment checksums, and thread links. Expected absence includes Bcc on the wire, active HTML, and unrequested attachment/profile headers. Bcc envelope expectations belong in the manifest only. HTML and plain alternatives express the same facts. Attachments have stable packaged bytes and deterministic metadata; no timestamps from the build machine.
+## Making output repeatable
 
-## Stress mutation contract
+The same plan and software versions must produce identical email bytes and JSON output. Record generator, fixture catalog, template, profile, Python, and dependency versions.
 
-First construct a bounded normal byte representation and its expectations. Apply exactly one named mutation per malformed fixture variant at a recorded byte range; no object-model round trip afterward, which could repair the intentional defect. The stress width and depth cases are structurally valid and tagged `stress-valid`. For malformed cases record `mutation_id`, original fixture hash, ordered edits with byte offsets/remove lengths/inserted bytes as base64, final hash, anomaly codes, and intended raw invariants. The advertised traversal filename fixture changes header metadata only; generated output names never use that metadata.
+Use the batch seed to derive separate seeds for each email and content field. For implementation, hash consistently formatted JSON with SHA-256. Include format version, batch seed, fixture ID, locale, repetition index, thread member index, and field name. This keeps one field's random choices from affecting another field.
 
-Mutation variants expand into separate coverage units just like locale variants. Allowed anomaly codes include `MIME_MISSING_CLOSE`, `MIME_BOUNDARY_REUSED`, `MIME_BOUNDARY_MISMATCH`, `HEADER_DUPLICATE_CONTENT_TYPE`, `HEADER_BROKEN_FOLD`, `HEADER_LINE_TOO_LONG`, `HEADER_BODY_SEPARATOR_MISSING`, `TRANSFER_INVALID_BASE64`, `TRANSFER_TRUNCATED_QP`, `CHARSET_MISMATCH`, and `MESSAGE_TRUNCATED`. These are Astrea codes, not promises of a particular parser library's defect names. Include the chosen variant and parameter values in the resolved plan; selection is predictable.
+Fix dates, message IDs, MIME boundaries, header order, line wrapping, encodings, and attachment bytes. Do not use the current time, machine name, local language settings, Python `hash()`, global random state, or directory listing order. Use Unicode NFC normalization except when a fixture explicitly tests another form. Keep existing message IDs stable when the requested count increases.
 
-Downstream expectation is a controlled outcome: bounded parse success, documented defect, or explicit rejection/resource-limit error. Crashes, hangs, excessive memory, unsafe attachment paths, and unintended network activity are failures of the tested parser. Suggested test harness defaults are a 5-second wall timeout and 256 MiB process memory cap, adjusted explicitly for the target platform. Astrea does not launch or manage the downstream parser in the MVP.
+## Writing email files
 
-Apply hard limits in `constraints.csv` to raw generation and mutations. MIME node width tests use empty text leaves to stay within byte budgets. Header budget includes nested entity headers; MIME node count and attachment limits are separate. Lower requested caps are allowed; higher caps fail. Use iterative planning and counting, avoid exponential trees, account for base64 expansion, and enforce actual serialized byte totals during writes.
+Normal emails follow RFC 5322 and MIME rules. Write bytes with CRLF line endings and an explicit email serialization policy. Use UTF-8 body text by default, RFC 2047 for non-ASCII subjects/display names, and RFC 2231 for non-ASCII attachment filenames. Raw UTF-8 headers and older character encodings are explicit Phase 2 options.
 
-## Output and manifest
+Use repeatable MIME boundaries and check that a boundary does not occur inside its parts. Respect line-length limits in normal emails. The default date is `2025-01-15T12:00:00Z`; add one minute for each file. Any simulated delivery steps use fixed time differences from that date. MVP uses recorded winter timezone offsets; later DST tests must use a fixed timezone-data version.
 
-A successful batch publishes one new directory:
+Number MIME parts by position: root `1`, first child `1.1`, second child `1.2`. An attached email (`message/rfc822`) has its own root counted as a child. Count containers, text parts, attachments, and attached email roots. Record type, depth, character encoding, transfer encoding, disposition, and Content-ID for each part.
+
+Root depth is 1. The nested fixture ends in a plain-text/HTML alternative. At depth 2 this is a root `multipart/alternative` with two text children. Each additional level wraps it in one `multipart/mixed` container. Normal depth is at most 16; explicit stress cases allow at most 64.
+
+Expected results cover both file bytes and decoded content. Check header order, repeated headers, line wrapping, encodings, subjects, recipients, text facts, part structure, attachment checksums, and reply links. Record absent properties too, such as Bcc. Optional Bcc recipient expectations are test metadata only; they are not written into the email headers. Plain-text and HTML alternatives describe the same facts. Packaged attachments have fixed contents and metadata.
+
+## Parser stress cases
+
+Stress cases require explicit fixture selection and `--include-stress`. That flag alone does not select any cases. Content remains passive, but a weak parser may still crash on the structure. Astrea never automatically opens generated files or runs the parser being tested.
+
+Deep and wide MIME cases follow the format rules and have `validity: stress-valid`. Malformed cases break a specific format rule and have `validity: malformed`. Ordinary cases have `validity: valid`.
+
+For a malformed case, first build a normal email, then apply one named direct byte edit. Do not parse and rewrite it afterward, since that might repair the intended error. Record the original checksum, edit offsets, removed byte counts, inserted bytes in base64, final checksum, and planned error code. A filename traversal case changes an attachment's advertised filename only; it never changes the output file path.
+
+Supported error codes are `MIME_MISSING_CLOSE`, `MIME_BOUNDARY_REUSED`, `MIME_BOUNDARY_MISMATCH`, `HEADER_DUPLICATE_CONTENT_TYPE`, `HEADER_BROKEN_FOLD`, `HEADER_LINE_TOO_LONG`, `HEADER_BODY_SEPARATOR_MISSING`, `TRANSFER_INVALID_BASE64`, `TRANSFER_TRUNCATED_QP`, `CHARSET_MISMATCH`, and `MESSAGE_TRUNCATED`. These are Astrea labels. Different parsers may use different names for the same problem.
+
+A parser test may accept the file, report a format error, or reject it because of a resource limit. A crash, hang, excessive memory use, unsafe attachment path, or unexpected network access is a test failure. Run parser tests separately with a timeout, memory limit, and networking disabled. Suggested starting limits are 5 seconds and 256 MiB; adjust them for the target parser/platform.
+
+Enforce the maximums in `constraints.csv` before and during writing. Count actual bytes, including base64 expansion and deliberate byte edits. Count headers inside all nested parts. Use empty text parts for large sibling-count tests. Avoid algorithms that require unlimited recursion or exponential memory. Users may lower limits but cannot raise the fixed maximums.
+
+## Output folder and manifest
+
+Write all `.eml` files directly inside the requested output folder:
 
 ```text
 fixtures/
-  valid/000001-fixture.uk.plain.eml
-  stress/000002-fixture.stress.boundary.eml
+  000001-fixture.uk.plain.eml
+  000002-fixture.us.pdf.eml
+  000003-fixture.ar.notification.eml
   plan.json
   manifest.json
-  assets.json
 ```
 
-The layout illustrates both categories; files exist only for selected messages. File numbering is the deterministic global message order, with six-digit indices and ASCII fixture IDs. Every entry in `manifest.json` references exactly one relative `.eml` path and includes schema/generator/catalog/template/profile/toolchain versions, seed namespace, fixture/locale/region/script, validity, size, raw SHA-256, expected ordered headers, decoded facts, MIME tree, attachment expectations, thread links, and stress annotations. Batch metadata contains exact selections, total bytes, coverage counts, and expected minimum. No generated-at timestamp, host path, or local username appears.
+This is an ordinary folder, not a mailbox format. Filenames use a six-digit index and the fixture ID. If stress cases are selected, their `.eml` files go in the same folder and are identified by fixture ID and the manifest's `validity` field.
 
-`assets.json` inventories used assets by stable ID, media type, byte length, SHA-256, provenance, license, and safety review revision. Assets are embedded in messages, not copied from arbitrary user paths. A separate `manifest.example.json` shows a minimal plain-message entry; hashes and toolchain versions there are explicit illustrative placeholders. It is an example shape rather than an executable golden batch. Implement strict versioned JSON schemas for plans and manifests with unknown-field rejection before adding the CLI.
+`plan.json` is the saved input: selected fixtures, languages, profiles, seed, dates, counts, and limits. It contains no machine-specific output path.
 
-Publish by writing to a private sibling staging directory and atomically renaming after all checks pass. Existing destination, symlinked paths, and traversal are errors; MVP has no overwrite flag. On failure leave no published batch and clean only files created by this invocation. Check budget estimates before writing and actual totals while streaming. Diagnostic output is separate from JSON plan/catalog stdout.
+`manifest.json` is the generated-file index and expected test results. It has one entry per `.eml` file containing:
 
-Maildir export in Phase 2 preserves normal `.eml` bytes and deterministically creates `cur/`, `new/`, and `tmp/`. Files have stable names and optional fixture-defined flags; users import the result using their client or local test tooling. Stress output is excluded and cannot be exported into a mailbox through this command. mbox is a later adapter because envelope separators and From-line escaping alter the container representation.
+- Relative filename and source fixture ID.
+- Language, header profiles, and normal/stress classification.
+- File size and SHA-256 checksum.
+- Expected headers, decoded text, MIME parts, attachments, and reply links.
+- Deliberate format errors or stress parameters, when applicable.
 
-## Diagnostics and acceptance
+Batch-level fields record software versions, seed, total bytes, and file counts by fixture. The `assets` list describes the packaged attachments used: ID, type, size, checksum, source, license, and safety review version. Attachments are embedded in the `.eml` files; they are not extracted into another folder. Omit the current time, host paths, and local usernames from metadata.
 
-Success returns 0; IO or generated-corpus validation failure returns 1; invocation, unsupported selection, invalid plan, and resource-limit request errors return 2. Stable diagnostic codes include `E_CONFIG`, `E_SELECTION`, `E_PROFILE_PAIR`, `E_COVERAGE_COUNT`, `E_LIMIT`, `E_PLAN_VERSION`, `E_OUTPUT_EXISTS`, `E_UNSAFE_PATH`, `E_IO`, `E_HASH`, and `E_ASSERTION`. JSON diagnostics contain code, message, field/fixture context, and relevant limits. Errors never dump credentials, arbitrary file contents, or message bodies.
+For example, `fixture.us.pdf` defines an invoice case. Its manifest entry points to the generated file and says that tests should find one `application/pdf` attachment with a known filename and checksum. The fixture is the definition; the manifest describes its generated instance.
 
-MVP acceptance requires byte-identical replay under a pinned toolchain; every core fixture and profile exercised; exact count and intact thread groups; offline generation; correct multilingual decoded content; reviewed asset checksums; no active or reachable content; normal tree/header/encoding consistency; and stress mutation correctness within limits. Verify plan expectations against an independent raw-byte inspector as well as a bounded standard-library parser. Add importer smoke tests when Maildir is implemented. Do not validate stress output by invoking an unbounded parser on the main CLI process.
+`plan.example.json` and `manifest.example.json` show proposed JSON fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
 
-Before implementation, finalize dependency pins, reviewed localized text, inert asset inventory, strict JSON schemas, and golden profile examples. These are implementation deliverables, not reasons to postpone the current specification.
+Write to a temporary sibling folder first. Check the complete batch, then rename it to the requested output folder. Reject existing destinations, symlinked paths, and path traversal. There is no overwrite option in MVP. On failure, remove only this run's temporary files and leave no completed output folder. Write diagnostics to stderr and command results to stdout.
+
+## Errors and completion checks
+
+Return 0 for success, 2 for invalid requests or plans, and 1 for file-access errors or failed generated-file checks. Error codes include `E_CONFIG`, `E_SELECTION`, `E_PROFILE_PAIR`, `E_COVERAGE_COUNT`, `E_LIMIT`, `E_PLAN_VERSION`, `E_OUTPUT_EXISTS`, `E_UNSAFE_PATH`, `E_IO`, `E_HASH`, and `E_ASSERTION`. JSON errors include the code, a clear message, the affected field or fixture, and relevant limits. Do not dump message bodies or arbitrary file contents into errors.
+
+MVP checks must cover repeatable output, every core case and MVP profile, exact file counts, complete threads, offline generation, multilingual text, safe attachments, normal MIME correctness, and accurate stress errors within limits. Compare fixture expectations with both direct file-byte inspection and a standard-library parser with processing limits. Never run an unlimited parser on stress files inside the CLI process.

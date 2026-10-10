@@ -1,12 +1,12 @@
-id,kind,phase,illustrative_headers,valid_pairings,assertions,fidelity
+id,kind,phase,illustrative_headers,valid_pairings,assertions,accuracy_notes
 client.generic.v1,client,MVP,No client-specific X headers,provider.generic.v1;provider.gmail.v1;provider.outlook.v1,Common RFC headers always present,Standards baseline
 client.gmail-web.v1,client,MVP,No X-Mailer; MIME multipart alternative template,provider.gmail.v1,Assert absence of X-Mailer; stable MIME template,Synthetic webmail approximation; not a claim Gmail always emits this layout
-client.outlook-desktop.v1,client,MVP,X-Mailer;Thread-Index;Thread-Topic,provider.outlook.v1;provider.generic.v1,Versioned placeholder X-Mailer and deterministic synthetic threading fields,Illustrative subset; verify against sanitized samples before claiming version fidelity
+client.outlook-desktop.v1,client,MVP,X-Mailer;Thread-Index;Thread-Topic,provider.outlook.v1;provider.generic.v1,Versioned placeholder X-Mailer and repeatable synthetic threading fields,Illustrative subset; verify against sanitized samples before claiming version accuracy
 client.thunderbird.v1,client,MVP,User-Agent;Content-Language,provider.generic.v1;provider.gmail.v1;provider.outlook.v1,Synthetic User-Agent version and locale-derived Content-Language,Illustrative desktop subset; not a full header fingerprint
 client.apple-mail.v1,client,Phase 2,X-Mailer;Mime-Version,provider.generic.v1,Versioned synthetic value and raw header casing,Illustrative subset
-provider.generic.v1,provider,MVP,Return-Path;Received,client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1,Two fixed trace hops using reserved IPs and .test domains,Synthetic delivery trace
+provider.generic.v1,provider,MVP,Return-Path;Received,client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1,Two fixed delivery steps using reserved IPs and .test domains,Synthetic delivery trace
 provider.gmail.v1,provider,MVP,Received;X-Received;Authentication-Results;X-Google-Smtp-Source,client.gmail-web.v1;client.generic.v1;client.thunderbird.v1,Placeholder values and example.test authentication identity,Synthetic provider-style shape; no real signatures or authentication claims
 provider.outlook.v1,provider,MVP,Received;Authentication-Results;X-MS-Exchange-Organization-AuthAs;X-MS-Exchange-Organization-SCL,client.outlook-desktop.v1;client.generic.v1;client.thunderbird.v1,Stable synthetic internal/external and SCL cases labeled in manifest,Synthetic provider-style shape; verify exact values against sanitized samples
-provider.yahoo.v1,provider,Phase 2,Received;X-YMail-OSG,client.generic.v1,Opaque seeded placeholder value,Illustrative subset
+provider.yahoo.v1,provider,Phase 2,Received;X-YMail-OSG,client.generic.v1,Random-looking placeholder value controlled by the seed,Illustrative subset
 provider.fastmail.v1,provider,Phase 2,Received;Authentication-Results,client.generic.v1;client.thunderbird.v1,Reserved-domain identity and trace ordering,Illustrative subset
 provider.custom.v1,provider,Later,Reviewed versioned local profile,compatibility-registry,Reject uncontrolled raw headers outside stress mutation layer,No fetched or unreviewed provider dumps

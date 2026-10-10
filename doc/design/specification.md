@@ -1,6 +1,6 @@
 # Astrea fake email generator specification
 
-Python CLI specification for reproducible inert email batches and bounded parser stress fixtures.
+Python CLI that generates repeatable folders of safe .eml test files, including optional parser stress cases.
 
 ## 01 Product and delivery
 
@@ -8,52 +8,87 @@ Python CLI specification for reproducible inert email batches and bounded parser
 
 #### Intent and scope
 
-Astrea is a proposed Python CLI for reproducible batches of inert `.eml` messages. Use `uv run --locked astrea` with seeded plans and machine-readable assertion manifests.
+Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
+
+A fixture defines a test case. `plan.json` records what to generate. `manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
 See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
 
-### 02 CLI features
+### 02 Glossary
+
+#### Glossary
+
+| example | id | meaning | term |
+| --- | --- | --- | --- |
+| 000001-fixture.uk.plain.eml | glossary.eml | One email stored as a file. It contains headers a body and any MIME parts or attachments. | .eml file |
+| fixture.uk.thread defines three related email files | glossary.fixture | A reusable test-case definition with known content and expected properties. A fixture can generate one email or a group of related emails. | Fixture |
+| A Japanese notification encoded as UTF-8 | glossary.variant | A specific version of a fixture chosen by language encoding or deliberate format error. | Fixture variant |
+| 100 .eml files in ./fixtures | glossary.batch | All email files produced by one generate command. | Batch |
+| core for normal test cases; stress for parser robustness tests | glossary.pack | A named group of fixture definitions. | Pack |
+| list fixtures --json | glossary.catalog | The list of supported fixtures packs languages and header profiles with their versions. | Fixture catalog |
+| plan.json selects fixture IDs counts seed and languages | glossary.plan | JSON describing what to generate and which settings to use. It is the input used to repeat a batch. | Batch plan |
+| A file uses fixture.us.pdf and should contain one PDF attachment | glossary.manifest | The output index in manifest.json. It lists generated email files their source fixtures checksums and expected test results. | Manifest |
+| Subject equals Meeting on Friday; Bcc is absent | glossary.assertion | A property that a test checks against an expected value. | Assertion |
+| --seed 42 | glossary.seed | An integer that controls generated random values. Same inputs and software versions give the same output. | Seed |
+| sha256 in a manifest entry identifies the exact .eml bytes | glossary.checksum | A fingerprint of file bytes used to check that content has not changed. | SHA-256 checksum |
+| client.thunderbird.v1 with provider.generic.v1 | glossary.profile | A named set of example headers and formatting rules for a client or provider. Profiles use synthetic values. | Header profile |
+| en_GB for UK English; ja_JP for Japanese; ar_EG for Arabic | glossary.locale | A language and regional variant used for text and formatting. | Locale |
+| Arabic HTML body with dir=rtl | glossary.rtl | Right-to-left text direction. Mixed text can also contain left-to-right words or digits. | RTL |
+| multipart/alternative holds plain-text and HTML versions | glossary.mime | The email format rules for text HTML attachments and groups of parts. | MIME |
+| A text/plain part followed by an application/pdf part | glossary.part | One item in an email structure: text an attachment an embedded email or a container for other parts. | MIME part |
+| A root container with direct text children has depth 2 | glossary.depth | Number of part levels from the root to a part. The root has depth 1. | Nesting depth |
+| --astrea-boundary-001 | glossary.boundary | A marker in the file that separates parts inside a multipart container. | MIME boundary |
+| UTF-8 text represented using quoted-printable | glossary.encoding | Character encoding maps text to bytes; transfer encoding represents those bytes inside the email file. | Character and transfer encoding |
+| cid:logo@example.test | glossary.cid | An identifier for an embedded part. HTML can refer to an embedded image using a cid: URL. | Content-ID / CID |
+| \r\n | glossary.crlf | Carriage return followed by line feed: the line-ending bytes used in email files. | CRLF |
+| One initial email and two replies | glossary.thread | Related emails connected using Message-ID In-Reply-To and References headers. | Thread |
+| Deeply nested MIME or a missing closing boundary | glossary.stress | A deliberately difficult parser test with passive content and limited file size part count and depth. | Stress fixture |
+| Remove a closing MIME boundary | glossary.mutation | A planned direct edit to generated bytes to create a specific format error. | Mutation |
+| Two conflicting Content-Type headers | glossary.malformed | An email that deliberately breaks a format rule. Its manifest records the intended error. | Malformed email |
+| MIME_MISSING_CLOSE | glossary.mutationcode | An Astrea identifier for a deliberate format error. A parser may use a different error name. | Anomaly code |
+| uv.lock plus an exact Python patch version | glossary.version | Exact Python dependency template and profile versions recorded to make generation repeatable. | Pinned software versions |
+| Core multilingual fixtures and bounded stress fixtures | glossary.mvp | The first supported release. Phase 2 Phase 3 and Later describe follow-up work. | MVP |
+
+### 03 CLI features
 
 #### CLI features
 
 | acceptance | contract | feature | id | phase | priority |
 | --- | --- | --- | --- | --- | --- |
-| Count of manifest entries equals count of .eml files | Generate exact requested count into new directory; default 100 | Batch .eml generation | feature.batch | MVP | must |
-| Same canonical plan and pinned toolchain yield identical .eml bytes and manifest | Seed defaults to 0; derive separate per-message per-component SHA-256 namespaces | Deterministic seeds | feature.seed | MVP | must |
-| Saving and replaying plan reproduces checksums | Versioned JSON plan with exact fixture allocations and resolved profiles | Replayable batch plan | feature.plan | MVP | must |
-| Reject count below minimum; manifest summary gives exact per-fixture counts | One instance of every selected fixture before cycling sorted IDs | Coverage mode | feature.coverage | MVP | must |
-| Exact count and allocations independent of iteration order | Integer weights with largest-remainder allocation and stable ID ties | Weighted allocation | feature.weighted | Phase 2 | should |
-| Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; assert script encoding and text direction; later packs broaden coverage | Build representative multilingual coverage from the MVP across Latin scripts Japanese and Arabic RTL; expand locale breadth in subsequent releases | Regional and script coverage | feature.locale | MVP | must |
-| Each manifest lists both IDs revisions and ordered expected headers | Separate versioned client profile and provider profile with compatibility registry | Client and provider profiles | feature.profiles | MVP | must |
-| Assert header multiplicity ordering encoding and controlled values; Bcc absent from wire by default | From To Cc Reply-To Date Message-ID Subject MIME-Version plus optional trace list and threading headers | Rich predictable headers | feature.headers | MVP | must |
-| Decoded body and charset match manifest | ASCII UTF-8 LF-to-CRLF normalization and explicit transfer encoding | Plain text | feature.text | MVP | must |
-| No scripts forms remote assets tracking or active URLs | HTML-only and multipart/alternative plain then HTML with escaped synthetic values | HTML and alternatives | feature.html | MVP | must |
-| Decoded attachment hashes match packaged assets | PNG JPEG PDF TXT CSV with predictable names sizes media types and SHA-256 | Safe attachments | feature.attachments | MVP | must |
-| Every cid reference resolves exactly once within related subtree | multipart/related with HTML referencing deterministic Content-ID | CID inline images | feature.inline | MVP | must |
-| Manifest preorder part paths types and tree depth equal serialized tree | Support simple trees and explicit depth parameter with fixed node budget | Linear and nested MIME | feature.nesting | MVP | must |
-| Every referenced generated ID exists and timestamps follow thread order | Deterministic Message-ID In-Reply-To References and message/rfc822 attachments | Threads and forwarded email | feature.threading | MVP | must |
-| Decoded values correct; raw encodings explicitly asserted | 7bit quoted-printable base64; RFC 2047 subjects and RFC 2231 filenames | Encoding variety | feature.encoding | MVP | must |
-| Reject unsupported charset/text combinations; no silent transliteration | ISO-8859-1 Windows-1252 ISO-2022-JP GB18030 where representable; UTF-8 international headers separate profile | Legacy and international encoding | feature.legacy | Phase 2 | should |
-| Manifest provides positive presence and negative absence assertions without relying solely on parser output | Versioned manifest.json containing raw hashes semantic expectations and structural paths | Assertion manifest | feature.manifest | MVP | must |
-| Each mutation has stable ID exact offsets expected defects and recommended parser outcome | Explicit --include-stress plus stress fixture selection; deterministic bounded raw-byte mutations | Parser stress fixtures | feature.stress | MVP | must |
-| Over-budget request fails before publishing destination | Enforce count byte node depth header and attachment caps before and during streaming writes | Resource limits | feature.limits | MVP | must |
-| Generation succeeds with network denied and assets packaged locally | No sending DNS network reads remote resources shell execution or real inbox samples | Offline and inert output | feature.offline | MVP | must |
-| Client can import mailbox; stress files remain separate | Export valid corpus as Maildir with exact bytes and deterministic flags | Mailbox directory export | feature.maildir | Phase 2 | should |
-| Detect tampering; stress validation checks planned anomalies without recursive unbounded parsing | Verify manifest hashes safe assets required headers plan coverage and normal MIME invariants | Corpus validation | feature.validate | MVP | must |
-| Usage/config 2; IO/validation 1; success 0 | Stable error codes JSON diagnostics option and exit status | Machine-readable diagnostics | feature.errors | MVP | must |
-| JSON catalog and plan stable for same inputs | List profiles fixtures locales and limits; plan without writing .eml | Catalog and preview | feature.inspect | MVP | must |
-| Document transformations and preserve original .eml hashes | Optional importer-friendly adapter with explicit From-line escaping | mbox export | feature.mbox | Later | could |
+| The folder contains exactly one .eml file for each manifest entry | Create the requested number of .eml files in a new folder; default 100 | Generate a folder of .eml files | feature.batch | MVP | must |
+| Same inputs and software versions produce identical email files and manifest.json | Use seed 0 by default; derive a separate random seed for each email and content field | Repeatable generation | feature.seed | MVP | must |
+| Running the saved plan produces the same files and SHA-256 checksums | Save selected fixtures counts languages and header profiles in plan.json | Saved generation plan | feature.plan | MVP | must |
+| Reject counts too small to include all selected cases; report how many files each fixture produced | Generate each selected fixture variant at least once before repeating cases | Include every selected test case | feature.coverage | MVP | must |
+| Produce the requested file count; use fixture IDs to break allocation ties; reject counts that cannot fit complete groups | Phase 2: assign integer weights to fixtures and convert them to whole test-case groups; keep thread groups complete | Control fixture proportions | feature.weighted | Phase 2 | should |
+| Core fixtures cover en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; check characters encoding and text direction | Start with English European Latin-script languages Japanese and Arabic RTL; add more languages in later releases | Language and writing-system coverage | feature.locale | MVP | must |
+| Each manifest entry identifies the two profiles and their versions and expected headers | Use separate named sets of client headers and provider headers; allow only supported combinations | Client and provider header examples | feature.profiles | MVP | must |
+| Check header values order repeated headers and encoding; Bcc is absent from the .eml file by default | Generate standard sender recipient date subject and MIME headers; add reply list and delivery headers when requested | Predictable email headers | feature.headers | MVP | must |
+| Decoded text and character encoding match the expected values in manifest.json | Support ASCII and UTF-8 text; use CRLF line endings and a specified transfer encoding | Plain-text emails | feature.text | MVP | must |
+| No scripts forms tracking remote images or active links | Support HTML-only emails and emails with both plain-text and HTML versions; escape inserted text | HTML emails | feature.html | MVP | must |
+| Attachment type size filename and SHA-256 checksum match the manifest | Attach reviewed PNG JPEG PDF TXT and CSV files with predictable names and contents | Safe test attachments | feature.attachments | MVP | must |
+| Each cid: link points to exactly one embedded image in the same related group | Embed images as MIME parts and reference them with cid: links in the HTML | Images inside HTML emails | feature.inline | MVP | must |
+| Part paths types order and nesting depth match the manifest | Generate simple multipart emails and nested parts with a requested depth; enforce part-count limits | Simple and nested email parts | feature.nesting | MVP | must |
+| Reply links point to generated emails; thread dates increase; attached emails have their own IDs | Generate related emails with Message-ID In-Reply-To and References; support an attached email using message/rfc822 | Replies and forwarded emails | feature.threading | MVP | must |
+| Check both encoded file bytes and decoded text or attachment contents | Support 7bit quoted-printable and base64; encode non-ASCII headers with RFC 2047 and filenames with RFC 2231 | Standard email encodings | feature.encoding | MVP | must |
+| Reject text that the chosen encoding cannot represent; never silently replace characters | Phase 2: support ISO-8859-1 Windows-1252 ISO-2022-JP and GB18030; add a separate profile for raw UTF-8 headers | Older character encodings | feature.legacy | Phase 2 | should |
+| Tests can find each file and check what should be present or absent; expectations come from the fixture rules | Write manifest.json with one entry per .eml file: source fixture checksum and expected headers text parts and attachments | Generated-file index and expected results | feature.manifest | MVP | must |
+| Record each deliberate error or stress parameter and the expected safe parser response | Require both explicit stress-case selection and --include-stress; generate deep wide or intentionally malformed emails within fixed limits | Parser robustness test cases | feature.stress | MVP | must |
+| Reject requests exceeding limits; leave no completed output folder after failure | Check maximum files bytes parts headers depth and attachments before and during generation | Generation limits | feature.limits | MVP | must |
+| Generation works with networking disabled; all attachment contents are reviewed and passive | Generate locally from packaged templates and attachments without sending email or fetching content | Offline generation and safe content | feature.offline | MVP | must |
+| Detect changed or missing files; check planned errors in stress cases without unbounded parsing | Check file checksums attachment contents expected headers selected cases and normal MIME structure | Check a generated batch | feature.validate | MVP | must |
+| Exit 0 for success; 2 for invalid requests; 1 for file-access errors or failed output checks | Return stable error codes; optionally write error details as JSON | Useful CLI errors | feature.errors | MVP | must |
+| JSON output is repeatable for the same inputs | List available fixtures profiles languages packs and limits; show a generation plan without writing emails | List options and preview a batch | feature.inspect | MVP | must |
 
-### 03 Regional coverage roadmap
+### 04 Regional coverage roadmap
 
 #### Regional coverage roadmap
 
 | assertions | content_focus | delivery_stage | id | locales | phase | region | scripts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Locale recorded; deterministic offset from fixed dates; £ encoded correctly | GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later | 1 | region.uk | en_GB | MVP | United Kingdom | Latin |
-| No OS locale reliance; date prose and wire Date checked separately | USD receipts MM/DD/YYYY prose US spelling America/New_York | 1 | region.us | en_US | MVP | United States | Latin |
+| Locale recorded; repeatable offset from fixed dates; £ encoded correctly | GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later | 1 | region.uk | en_GB | MVP | United Kingdom | Latin |
+| Do not rely on OS language settings; check body date formatting separately from the Date header | USD receipts MM/DD/YYYY prose US spelling America/New_York | 1 | region.us | en_US | MVP | United States | Latin |
 | NFC accents preserved in subjects bodies display names and filenames | EUR receipts accents umlauts apostrophes and localized business prose | 1 | region.europe.latin | fr_FR;de_DE;es_ES;it_IT | MVP | Europe Latin scripts | Latin |
 | Reviewed Japanese body; encoded subject and display name preserve Japanese characters | UTF-8 Japanese notifications mixed-script display names and subjects | 1 | region.asia.japan | ja_JP | MVP | Japan | Japanese |
 | HTML dir=rtl; bidi code points recorded; RFC 2047 subject and RFC 2231 filename; output paths remain ASCII | RTL appointment reminder mixed-script text and Unicode attachment filename | 1 | region.rtl.arabic | ar_EG | MVP | Arabic-language baseline (Egypt locale) | Arabic |
@@ -62,7 +97,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | UTF-8 first; reviewed translations and fonts not assumed on recipient client | CJK wide characters mixed-script names local currency and no-space wrapping | 2 | region.asia.nonlatin | ja_JP;zh_CN;zh_TW;ko_KR;hi_IN;th_TH | Phase 2 | Asia additional scripts | Japanese;Han;Hangul;Devanagari;Thai |
 | No real street addresses payment details or reachable contacts | BRL MXN AUD ZAR local business fixtures | 3 | region.world.latin | pt_BR;es_MX;en_AU;en_ZA | Phase 3 | Rest of world Latin and English | Latin |
 | Explicit dir attributes and bidi code points in manifest; filenames remain generated ASCII | RTL body mixed-direction subjects and filenames | 3 | region.world.rtl | ar_EG;he_IL | Phase 3 | Middle East and additional RTL coverage | Arabic;Hebrew |
-| Unsupported locale rejected; provider fallback disclosed and never relabeled as translated content | Add locales only with reviewed content and fixture assertions | 4 | region.world.expanded | reviewed-locale-registry | Later | Additional regions | Multiple |
+| Reject unsupported languages; record any fallback language used by Faker; do not claim fallback text is translated content | Add locales only with reviewed content and fixture assertions | 4 | region.world.expanded | reviewed-locale-registry | Later | Additional regions | Multiple |
 
 ## 02 Fixture coverage
 
@@ -82,8 +117,8 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | List-ID and List-Unsubscribe use .test; no real unsubscribe endpoint | client.generic.v1 | feature.headers;feature.locale | fixture.it.list | it_IT | alternative(plain;html) | core | MVP | provider.generic.v1 | Italian community newsletter | valid |
 | Group of three; References links; increasing Date; quoted reply body | client.thunderbird.v1 | feature.threading;feature.seed | fixture.uk.thread | en_GB | text/plain per message | core | MVP | provider.generic.v1 | Three-message support conversation | valid |
 | Embedded From Subject and Message-ID distinct; manifest includes inner message | client.outlook-desktop.v1 | feature.threading;feature.nesting | fixture.us.forward | en_US | mixed(plain;message/rfc822(plain)) | core | MVP | provider.outlook.v1 | Forwarded message as attachment | valid |
-| Default depth 6; requested normal depth 2..16; exact preorder paths and node count | client.generic.v1 | feature.nesting | fixture.uk.nested | en_GB | mixed chain with final alternative(plain;html) | core | MVP | provider.generic.v1 | Nested MIME parser traversal | valid |
-| Multiple To and Cc mailboxes; Reply-To; Bcc in envelope manifest only; folded header | client.generic.v1 | feature.headers | fixture.us.recipients | en_US | text/plain | core | MVP | provider.generic.v1 | Team announcement with recipient variants | valid |
+| Default depth 6; requested normal depth 2..16; exact part paths in parent-before-child order and node count | client.generic.v1 | feature.nesting | fixture.uk.nested | en_GB | mixed chain with final alternative(plain;html) | core | MVP | provider.generic.v1 | Nested MIME parser traversal | valid |
+| Multiple To and Cc addresses; Reply-To; Bcc recipient listed only in test metadata; header spans multiple lines | client.generic.v1 | feature.headers | fixture.us.recipients | en_US | text/plain | core | MVP | provider.generic.v1 | Team announcement with recipient variants | valid |
 | Body is zero decoded bytes; required headers retained | client.generic.v1 | feature.text | fixture.uk.empty | en_GB | text/plain | core | MVP | provider.generic.v1 | Empty message body | valid |
 | NFC and explicitly tagged NFD variants; RFC 2231 continuations; source code points asserted | client.thunderbird.v1 | feature.legacy;feature.encoding | fixture.fr.unicode | fr_FR | mixed(plain;txt) | encoding | Phase 2 | provider.generic.v1 | Normalization and filename variants | valid |
 | ISO-8859-1 or Windows-1252 selector; charset decoded text and raw bytes asserted | client.generic.v1 | feature.legacy | fixture.de.legacy | de_DE | text/plain | encoding | Phase 2 | provider.generic.v1 | Legacy Western encoding | valid |
@@ -107,21 +142,21 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 #### Client and provider profiles
 
-| assertions | fidelity | id | illustrative_headers | kind | phase | valid_pairings |
+| accuracy_notes | assertions | id | illustrative_headers | kind | phase | valid_pairings |
 | --- | --- | --- | --- | --- | --- | --- |
-| Common RFC headers always present | Standards baseline | client.generic.v1 | No client-specific X headers | client | MVP | provider.generic.v1;provider.gmail.v1;provider.outlook.v1 |
-| Assert absence of X-Mailer; stable MIME template | Synthetic webmail approximation; not a claim Gmail always emits this layout | client.gmail-web.v1 | No X-Mailer; MIME multipart alternative template | client | MVP | provider.gmail.v1 |
-| Versioned placeholder X-Mailer and deterministic synthetic threading fields | Illustrative subset; verify against sanitized samples before claiming version fidelity | client.outlook-desktop.v1 | X-Mailer;Thread-Index;Thread-Topic | client | MVP | provider.outlook.v1;provider.generic.v1 |
-| Synthetic User-Agent version and locale-derived Content-Language | Illustrative desktop subset; not a full header fingerprint | client.thunderbird.v1 | User-Agent;Content-Language | client | MVP | provider.generic.v1;provider.gmail.v1;provider.outlook.v1 |
-| Versioned synthetic value and raw header casing | Illustrative subset | client.apple-mail.v1 | X-Mailer;Mime-Version | client | Phase 2 | provider.generic.v1 |
-| Two fixed trace hops using reserved IPs and .test domains | Synthetic delivery trace | provider.generic.v1 | Return-Path;Received | provider | MVP | client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1 |
-| Placeholder values and example.test authentication identity | Synthetic provider-style shape; no real signatures or authentication claims | provider.gmail.v1 | Received;X-Received;Authentication-Results;X-Google-Smtp-Source | provider | MVP | client.gmail-web.v1;client.generic.v1;client.thunderbird.v1 |
-| Stable synthetic internal/external and SCL cases labeled in manifest | Synthetic provider-style shape; verify exact values against sanitized samples | provider.outlook.v1 | Received;Authentication-Results;X-MS-Exchange-Organization-AuthAs;X-MS-Exchange-Organization-SCL | provider | MVP | client.outlook-desktop.v1;client.generic.v1;client.thunderbird.v1 |
-| Opaque seeded placeholder value | Illustrative subset | provider.yahoo.v1 | Received;X-YMail-OSG | provider | Phase 2 | client.generic.v1 |
-| Reserved-domain identity and trace ordering | Illustrative subset | provider.fastmail.v1 | Received;Authentication-Results | provider | Phase 2 | client.generic.v1;client.thunderbird.v1 |
-| Reject uncontrolled raw headers outside stress mutation layer | No fetched or unreviewed provider dumps | provider.custom.v1 | Reviewed versioned local profile | provider | Later | compatibility-registry |
+| Standards baseline | Common RFC headers always present | client.generic.v1 | No client-specific X headers | client | MVP | provider.generic.v1;provider.gmail.v1;provider.outlook.v1 |
+| Synthetic webmail approximation; not a claim Gmail always emits this layout | Assert absence of X-Mailer; stable MIME template | client.gmail-web.v1 | No X-Mailer; MIME multipart alternative template | client | MVP | provider.gmail.v1 |
+| Illustrative subset; verify against sanitized samples before claiming version accuracy | Versioned placeholder X-Mailer and repeatable synthetic threading fields | client.outlook-desktop.v1 | X-Mailer;Thread-Index;Thread-Topic | client | MVP | provider.outlook.v1;provider.generic.v1 |
+| Illustrative desktop subset; not a full header fingerprint | Synthetic User-Agent version and locale-derived Content-Language | client.thunderbird.v1 | User-Agent;Content-Language | client | MVP | provider.generic.v1;provider.gmail.v1;provider.outlook.v1 |
+| Illustrative subset | Versioned synthetic value and raw header casing | client.apple-mail.v1 | X-Mailer;Mime-Version | client | Phase 2 | provider.generic.v1 |
+| Synthetic delivery trace | Two fixed delivery steps using reserved IPs and .test domains | provider.generic.v1 | Return-Path;Received | provider | MVP | client.generic.v1;client.outlook-desktop.v1;client.thunderbird.v1;client.apple-mail.v1 |
+| Synthetic provider-style shape; no real signatures or authentication claims | Placeholder values and example.test authentication identity | provider.gmail.v1 | Received;X-Received;Authentication-Results;X-Google-Smtp-Source | provider | MVP | client.gmail-web.v1;client.generic.v1;client.thunderbird.v1 |
+| Synthetic provider-style shape; verify exact values against sanitized samples | Stable synthetic internal/external and SCL cases labeled in manifest | provider.outlook.v1 | Received;Authentication-Results;X-MS-Exchange-Organization-AuthAs;X-MS-Exchange-Organization-SCL | provider | MVP | client.outlook-desktop.v1;client.generic.v1;client.thunderbird.v1 |
+| Illustrative subset | Random-looking placeholder value controlled by the seed | provider.yahoo.v1 | Received;X-YMail-OSG | provider | Phase 2 | client.generic.v1 |
+| Illustrative subset | Reserved-domain identity and trace ordering | provider.fastmail.v1 | Received;Authentication-Results | provider | Phase 2 | client.generic.v1;client.thunderbird.v1 |
+| No fetched or unreviewed provider dumps | Reject uncontrolled raw headers outside stress mutation layer | provider.custom.v1 | Reviewed versioned local profile | provider | Later | compatibility-registry |
 
-## 03 Implementation contracts
+## 03 Implementation rules
 
 ### 01 Technology choices
 
@@ -129,89 +164,87 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | constraint | decision | id | phase | rationale | reference | role | technology |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pin exact Python patch for byte-identical golden fixtures | selected | tech.python | MVP | Typed Python package with console entry point astrea | https://docs.python.org/3/ | Runtime | Python 3.12+ |
+| Pin exact Python patch for byte-identical saved reference fixtures | selected | tech.python | MVP | Typed Python package with console entry point astrea | https://docs.python.org/3/ | Runtime | Python 3.12+ |
 | Dependency setup may use network; fixture generation must be offline | selected | tech.uv | MVP | Use pyproject.toml and uv.lock; uv run --locked astrea | https://docs.astral.sh/uv/concepts/projects/run/ | Environment and invocation | uv |
 | Validate all choices and bounds before writes | selected | tech.argparse | MVP | Subcommands and stable help without a CLI framework dependency | https://docs.python.org/3/library/argparse.html | CLI parsing | argparse (stdlib) |
-| Fix CRLF folding header order encodings and boundaries; raw mutation layer for malformed cases | selected | tech.email | MVP | EmailMessage and BytesGenerator with explicit policy | https://docs.python.org/3/library/email.html | MIME construction and serialization | email (stdlib) |
-| Pin version; never use uncontrolled email/url/phone/address providers; record provider fallback | selected | tech.faker | MVP | Seeded locale providers supplement curated body templates | https://faker.readthedocs.io/en/stable/ | Localized synthetic names and organizations | Faker |
+| Fix line endings header order wrapping encodings and boundaries; edit file bytes directly for malformed cases | selected | tech.email | MVP | EmailMessage and BytesGenerator with explicit policy | https://docs.python.org/3/library/email.html | Build and write MIME emails | email (stdlib) |
+| Pin version; never use uncontrolled email/url/phone/address providers; record fallback language used by Faker | selected | tech.faker | MVP | Seeded locale providers supplement curated body templates | https://faker.readthedocs.io/en/stable/ | Localized synthetic names and organizations | Faker |
 | Faker lorem is not a substitute for natural localized sentences; no external template execution | selected | tech.templates | MVP | Small reviewed templates for receipts newsletters conversations and notifications | https://docs.python.org/3/library/html.html | Realistic body content | Curated UTF-8 templates plus html.escape (stdlib) |
-| No remote downloads; PDFs have no JavaScript actions links forms or embedded files; images have bounded dimensions | selected | tech.assets | MVP | Reviewed inert assets reused byte-for-byte with checksums | project-owned-assets | Attachments | Packaged PNG JPEG PDF TXT CSV assets |
-| Reject unknown fields; UTF-8 output; canonical serialization | selected | tech.json | MVP | Versioned JSON schema and typed internal domain model | https://docs.python.org/3/library/json.html | Batch plans and manifest | json and dataclasses (stdlib) |
-| Never use process-dependent hash() or global random state | selected | tech.hashlib | MVP | SHA-256 of canonical input and fixture namespace | https://docs.python.org/3/library/hashlib.html | Identity seeds and checksums | hashlib (stdlib) |
-| Reject existing destinations symlinks and path traversal; clean only own staging files | selected | tech.pathlib | MVP | Staging directory and atomic rename on same filesystem | https://docs.python.org/3/library/pathlib.html | Safe output publication | pathlib and tempfile (stdlib) |
-| Deterministic names and flags; no IMAP or SMTP delivery | selected | tech.maildir | Phase 2 | Maildir export from valid .eml bytes | https://docs.python.org/3/library/mailbox.html | Optional mailbox packaging | mailbox (stdlib) |
-| Test dependencies pinned in uv.lock; independently inspect raw output | selected-dev | tech.pytest | MVP | CLI error tests golden bytes manifest consistency and safety checks | https://docs.pytest.org/en/stable/ | Regression and integration checks | pytest |
+| No remote downloads; PDFs have no JavaScript actions links forms or embedded files; images have bounded dimensions | selected | tech.assets | MVP | Reviewed passive assets reused byte-for-byte with checksums | project-owned-assets | Attachments | Packaged PNG JPEG PDF TXT CSV assets |
+| Reject unknown fields; write UTF-8 JSON in a consistent format | selected | tech.json | MVP | Versioned JSON formats and typed Python data models | https://docs.python.org/3/library/json.html | Batch plans and manifest | json and dataclasses (stdlib) |
+| Never use process-dependent hash() or global random state | selected | tech.hashlib | MVP | SHA-256 of consistently formatted input and fixture ID | https://docs.python.org/3/library/hashlib.html | Repeatable IDs seeds and checksums | hashlib (stdlib) |
+| Reject existing destinations symlinks and path traversal; clean only own staging files | selected | tech.pathlib | MVP | Write to a temporary folder then rename it to the destination | https://docs.python.org/3/library/pathlib.html | Write output files safely | pathlib and tempfile (stdlib) |
+| Test dependencies pinned in uv.lock; independently inspect raw output | selected-dev | tech.pytest | MVP | CLI error tests saved reference files manifest checks and content safety checks | https://docs.pytest.org/en/stable/ | Regression and integration checks | pytest |
 | Hard bounds and replayable examples; no unbounded fuzzing | candidate-dev | tech.hypothesis | Phase 2 | Exercise MIME trees and selector combinations | https://hypothesis.readthedocs.io/en/latest/ | Bounded combinatorial tests | Hypothesis |
 | Pin dev dependency | selected-dev | tech.ruff | MVP | Consistent Python style and static checks | https://docs.astral.sh/ruff/ | Lint and format | Ruff |
 | Not a runtime dependency | selected-design | tech.flyb | MVP | Assemble CSV and prose into doc/design | https://github.com/flarebyte/baldrick-flying-buttress | Design documentation generation | flyb |
 
-### 02 CLI command contract
+### 02 CLI commands
 
-#### CLI command contract
+#### CLI commands
 
 | command_or_option | contract | default | example | id | phase |
 | --- | --- | --- | --- | --- | --- |
-| generate | Publish new output directory with valid/ stress/ manifest.json plan.json and assets.json | core pack; 100 messages; seed 0 | uv run --locked astrea generate --out ./fixtures --count 100 --seed 42 | cli.generate | MVP |
-| --pack | Repeatable additive packs; stable resolved fixture order; stress requires separate gate | core | --pack core | cli.pack | MVP |
-| --fixture | Repeatable IDs narrow pack selection; incompatible filters fail instead of dropping cases | all fixtures in selected packs | --fixture fixture.uk.plain | cli.fixture | MVP |
-| --count | Positive integer counts wire messages including thread members; max 10000 | 100 | --count 24 | cli.count | MVP |
-| --locale | Repeatable locales expand declared variants only; unknown or incompatible selection fails | catalog-defined fixture locale | --locale en_GB | cli.locale | MVP |
-| --client-profile | Override only when compatible with selected provider and required fixture features | fixture default | --client-profile client.thunderbird.v1 | cli.client | MVP |
-| --provider-profile | Validate both profile pairing and fixture header constraints | fixture default | --provider-profile provider.generic.v1 | cli.provider | MVP |
-| --seed | Unsigned 64-bit integer; per-component deterministic derivation | 0 | --seed 42 | cli.seed | MVP |
-| --base-date | RFC 3339 UTC instant; deterministic per-index time increments and thread order | 2025-01-15T12:00:00Z | --base-date 2025-01-15T12:00:00Z | cli.date | MVP |
-| --mode | Coverage mode ensures selected cases; weighted added Phase 2 | coverage | --mode coverage | cli.mode | MVP |
-| --depth | Root MIME node depth 1; valid range depends on fixture; maximum 64 | 6 for nested normal; 32 for stress depth | --depth 8 | cli.depth | MVP |
-| --include-stress | Required for --pack stress or any stress fixture; gate alone never selects stress | false | --pack stress --include-stress | cli.stress | MVP |
-| plan | Emit resolved plan JSON to stdout; dry run with no output writes | same options as generate | uv run --locked astrea plan --count 24 --seed 42 | cli.plan | MVP |
-| generate --plan | Read strict schema-versioned resolved JSON plan; only --out and --json-diagnostics may accompany | none | uv run --locked astrea generate --plan batch-plan.json --out ./fixtures | cli.planfile | MVP |
-| list fixtures/profiles/locales/packs | Catalog includes IDs phase revisions compatibility and minimum message counts; --json supported | text | uv run --locked astrea list fixtures --json | cli.list | MVP |
-| validate --input | Check corpus consistency safety and declared assertions using bounded inspection | none | uv run --locked astrea validate --input ./fixtures --json-diagnostics | cli.validate | MVP |
-| --max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes | Optional lower limits only; increasing hard caps rejected | hard caps | --max-message-bytes 1048576 | cli.limits | MVP |
-| --json-diagnostics | Structured error code field context and actionable message on stderr; stdout remains machine-readable | false | --json-diagnostics | cli.diagnostics | MVP |
-| export --format maildir --input --out | New Maildir containing valid corpus; reject stress inclusion; no network import | valid messages only | uv run --locked astrea export --format maildir --input ./fixtures --out ./mailbox | cli.export | Phase 2 |
-| --version | Print generator catalog and manifest schema versions | none | uv run --locked astrea --version | cli.version | MVP |
+| generate | Create .eml files directly in a new output folder plus plan.json and manifest.json | core pack; 100 messages; seed 0 | uv run --locked astrea generate --out ./fixtures --count 100 --seed 42 | cli.generate | MVP |
+| --pack | Combine named fixture groups; sort the selected cases consistently; stress cases also require --include-stress | core | --pack core | cli.pack | MVP |
+| --fixture | Select specific fixture IDs from the chosen packs; reject incompatible selections | all fixtures in selected packs | --fixture fixture.uk.plain | cli.fixture | MVP |
+| --count | Number of .eml files including every message in a thread; minimum depends on selected cases; maximum 10000 | 100 | --count 24 | cli.count | MVP |
+| --locale | Select supported language variants; reject unknown languages or incompatible fixtures | language defined by the fixture | --locale en_GB | cli.locale | MVP |
+| --client-profile | Use a different client header profile only if it supports the selected provider and fixture requirements | fixture default | --client-profile client.thunderbird.v1 | cli.client | MVP |
+| --provider-profile | Use a different provider header profile only if it supports the selected client and fixture requirements | fixture default | --provider-profile provider.generic.v1 | cli.provider | MVP |
+| --seed | Integer from 0 to 18446744073709551615; controls repeatable random content | 0 | --seed 42 | cli.seed | MVP |
+| --base-date | UTC date and time in RFC 3339 format; increment by one minute for each generated email | 2025-01-15T12:00:00Z | --base-date 2025-01-15T12:00:00Z | cli.date | MVP |
+| --mode | Coverage includes every selected case; weighted proportions are planned for Phase 2 | coverage | --mode coverage | cli.mode | MVP |
+| --depth | Root part has depth 1; normal limit 16; stress limit 64; applies to nested fixtures | 6 for nested normal; 32 for stress depth | --depth 8 | cli.depth | MVP |
+| --include-stress | Required when selecting any stress fixture; this flag alone does not select stress cases | false | --pack stress --include-stress | cli.stress | MVP |
+| plan | Print the complete generation plan as JSON without creating files | same options as generate | uv run --locked astrea plan --count 24 --seed 42 | cli.plan | MVP |
+| generate --plan | Read a saved JSON plan; reject unsupported versions or fields; only --out and --json-diagnostics may accompany it | none | uv run --locked astrea generate --plan batch-plan.json --out ./fixtures | cli.planfile | MVP |
+| list fixtures/profiles/locales/packs | List IDs versions supported combinations and minimum file counts; --json supported | text | uv run --locked astrea list fixtures --json | cli.list | MVP |
+| validate --input | Check generated files against manifest.json and fixture rules within fixed processing limits | none | uv run --locked astrea validate --input ./fixtures --json-diagnostics | cli.validate | MVP |
+| --max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes | Allow smaller limits; reject values above the fixed maximums | fixed maximums | --max-message-bytes 1048576 | cli.limits | MVP |
+| --json-diagnostics | Write error code message affected field and limits as JSON to stderr; keep stdout for command results | false | --json-diagnostics | cli.diagnostics | MVP |
+| --version | Print generator fixture catalog and JSON format versions | none | uv run --locked astrea --version | cli.version | MVP |
 
-### 03 Safety and determinism constraints
+### 03 Safety and generation limits
 
-#### Safety and determinism constraints
+#### Safety and generation limits
 
 | area | id | rule | verification |
 | --- | --- | --- | --- |
-| Synthetic identities | constraint.identity | All addresses and message IDs use example.test; subdomains also end .test; no real users credentials phone numbers or payment details | Scan decoded headers bodies and assets against controlled source values |
+| Synthetic identities | constraint.identity | All addresses and message IDs use example.test; subdomains also end .test; no real users credentials phone numbers or payment details | Scan decoded headers bodies and assets against approved template values |
 | Offline generation | constraint.network | All templates profiles and assets shipped locally; no SMTP IMAP HTTP DNS or filesystem reads outside configured plan and packaged assets | Network-denied integration generation |
 | Inert content | constraint.links | HTML limited to passive tags and inline styling; no scripts events forms frames remote styles external images or data URIs; href values only https://example.test/... | Allowlist HTML validation and decoded URL checks |
 | Attachments | constraint.assets | Reviewed PNG JPEG PDF TXT CSV only; no executables macros archives decompression bombs EICAR or exploit payloads | Asset inventory SHA-256 sizes media types dimensions and review metadata |
-| Normal and stress separation | constraint.validity | Core output RFC 5322/MIME-compatible; malformed and structurally adversarial cases only selected explicitly and stored in stress/ | Normal corpus has no planned parse defects; stress IDs and defects manifest-marked |
-| Count and bytes | constraint.resources | Max 10000 messages; max 5242880 serialized bytes per message; max 268435456 serialized bytes per batch | Plan conservative estimate and streaming byte accounting; never publish partial destination |
-| MIME structure | constraint.structure | Normal max depth 16; stress max depth 64; max 1000 total MIME nodes per message including embedded message roots | Iterative tree traversal and bounded serialization |
-| Header budgets | constraint.headers | Max total raw headers across entire message 65536 bytes; max raw single header field 16384 bytes; valid lines at most 998 octets | Byte-level accounting before publish; oversized stress line remains inside byte caps |
+| Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and --include-stress; mark each file in manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
+| Count and bytes | constraint.resources | Max 10000 messages; max 5242880 serialized bytes per message; max 268435456 serialized bytes per batch | Estimate size before writing and count actual bytes while writing; never complete a partial batch |
+| MIME structure | constraint.structure | Normal maximum depth 16; stress maximum depth 64; maximum 1000 MIME parts per email including containers and attached email roots | Count parts and depth without unlimited recursion; check limits while writing |
+| Header budgets | constraint.headers | Max total raw headers across entire message 65536 bytes; max raw single header field 16384 bytes; valid lines at most 998 octets | Count header bytes before completing output; stress headers must still fit byte limits |
 | Attachment budgets | constraint.attachments | Max 20 attachment leaves per message; max decoded attachment 2097152 bytes; images at most 2048 by 2048 pixels | Count and decoded size accounting; no expanding container formats |
-| Depth convention | constraint.depth | Root depth 1; every contained MIME entity increases depth including message/rfc822 embedded root; depth fixture uses linear chain | Manifest tree depth and node paths checked by independent bounded traversal |
-| Deterministic bytes | constraint.reproducibility | Fix seed dates timezone offsets IDs boundaries header order folding transfer encodings asset bytes and serialization policy | Golden hashes on pinned Python patch dependencies generator revision catalog and templates |
-| Locale integrity | constraint.locale | Use curated localized prose; explicit effective Faker locale per field; no environment locale or silent body fallback | Reject missing reviewed templates; manifest records fallback fields |
-| Profile fidelity | constraint.profiles | Profiles describe synthetic header shapes with pinned revision; no real DKIM ARC signatures or claims of deliverability | Authentication placeholders marked synthetic; sanitized evidence required before exact-version fidelity |
-| Independent expectations | constraint.manifest | Planner establishes semantic and raw assertions before serialization; parser output never supplies sole expected result | Compare bytes and bounded parser output to plan assertions; preserve duplicate headers as arrays |
-| Safe output paths | constraint.filesystem | Generated index-and-ID ASCII filenames; prohibit existing destination symlinks traversal and arbitrary attachment extraction | Negative path checks; only own staging files cleaned on failure |
-| Stress expectations | constraint.stress | Safe refers to inert content; intentionally stressful structure can exhaust or crash weak parsers; never open with a desktop client automatically | Manifest recommends isolated parser subprocess with timeout memory cap and no network |
-| Downstream parser outcome | constraint.parser | Stress acceptance is bounded success rejection or documented defect; never promise every parser crashes or emits identical defect names | Separate generator assertions from suggested parser resource/defect expectations |
-| Product boundary | constraint.scope | Create local fixtures and packaging; no mail sending account login inbox scraping live provider API or existing-mail anonymization | CLI catalog has no network delivery commands |
+| Depth convention | constraint.depth | Root depth is 1; each child part adds one level including an attached email root; the depth fixture uses one chain of nested containers | Check manifest part paths and depth against a separate part traversal |
+| Repeatable files | constraint.reproducibility | Fix seed dates timezone offsets IDs boundaries header order wrapping encodings attachment bytes and file-writing settings | Compare checksums with saved reference files using exact Python dependency generator catalog and template versions |
+| Locale integrity | constraint.locale | Use reviewed text for each language; record the language Faker actually uses for each field; do not silently replace a body with another language | Reject missing reviewed templates; manifest records fallback fields |
+| Profile accuracy | constraint.profiles | Profiles contain example header sets with recorded versions; no real DKIM or ARC signatures and no promise of delivery | Mark authentication values as synthetic; require reviewed samples before claiming an exact vendor-version match |
+| Expected test results | constraint.manifest | Derive expected file bytes and decoded values from fixture rules before generating the email; do not copy expectations from parser output | Compare files and parser results with independent expectations; keep repeated headers as ordered lists |
+| Safe output paths | constraint.filesystem | Generated index-and-ID ASCII filenames; prohibit existing destination symlinks traversal and arbitrary attachment extraction | Test unsafe paths; remove only temporary files created by this run |
+| Stress expectations | constraint.stress | Content contains no executable code or malware; stress structures may still crash weak parsers; never automatically open generated files | Manifest describes each stress case; run parser tests separately with time and memory limits and no network |
+| Parser test results | constraint.parser | A parser may accept a stress email report a format error or reject it because of limits; it must not crash hang or use excessive memory | Check generator output separately from the behavior of the parser being tested |
+| Output scope | constraint.scope | Generate a folder of .eml files and supporting JSON only; Maildir mbox mailbox export import and delivery are out of scope | No mailbox-format output options export/import commands account access or network delivery commands |
 
-### 04 Generation and assertion contracts
+### 04 Generation and test rules
 
-#### Generation and assertion contracts
+#### Generation and test rules
 
-Plan exact message counts and complete thread groups before writing. Pin the toolchain, catalog, profiles, templates, and assets; derive independent component seeds and stable byte serialization. Record raw and semantic expectations independently of parser results.
+Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and software versions to reproduce a batch. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
 
-Keep ordinary output in `valid/` and explicitly selected parser stress cases in `stress/`. Stress content remains inert while structures may crash vulnerable parsers. Enforce byte, node, header, attachment, and depth limits and publish only a completely validated new directory.
+Write `.eml` files directly in one output folder with `plan.json` and `manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
 
-See [the complete packaging, planning, serialization, mutation, manifest, and acceptance contracts](../design-meta/examples/contracts.md).
+See [the complete generation rules](../design-meta/examples/contracts.md).
 
 ## 04 Payload examples
 
-### 01 Resolved plan example
+### 01 Generation plan example
 
-#### Resolved plan example
+#### Generation plan example
 
 ```json
 {
@@ -246,9 +279,9 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
 }
 ```
 
-### 02 Assertion manifest example
+### 02 Generated-file manifest example
 
-#### Assertion manifest example
+#### Generated-file manifest example
 
 ```json
 {
@@ -257,11 +290,6 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
   "generator_version": "0.1.0-example",
   "catalog_version": "1",
   "template_revision": "example",
-  "toolchain": {
-    "python": "PIN_EXACT_PATCH",
-    "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-    "faker": "PIN_EXACT_VERSION"
-  },
   "seed": 42,
   "count": 1,
   "total_message_bytes": 0,
@@ -275,10 +303,9 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
   "messages": [
     {
       "index": 1,
-      "path": "valid/000001-fixture.uk.plain.eml",
+      "path": "000001-fixture.uk.plain.eml",
       "fixture_id": "fixture.uk.plain",
       "occurrence": 0,
-      "seed_namespace": "fixture.uk.plain/en_GB/0/0",
       "locale": "en_GB",
       "region": "region.uk",
       "script": "Latin",
@@ -315,10 +342,6 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
             "Content-Type",
             "Content-Transfer-Encoding"
           ],
-          "multiplicity": {
-            "Received": 2,
-            "Subject": 1
-          },
           "absent": [
             "Bcc",
             "X-Mailer"
@@ -328,6 +351,10 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
             "To": "Alex Lane <alex@example.test>",
             "Subject": "Meeting on Friday",
             "Message-ID": "<astrea-example-1@example.test>"
+          },
+          "counts": {
+            "Received": 2,
+            "Subject": 1
           }
         },
         "body_facts": [
@@ -353,9 +380,15 @@ See [the complete packaging, planning, serialization, mutation, manifest, and ac
         "attachments": [],
         "thread": null,
         "stress": null
-      }
+      },
+      "seed_key": "fixture.uk.plain/en_GB/0/0"
     }
-  ]
+  ],
+  "software_versions": {
+    "python": "PIN_EXACT_PATCH",
+    "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "faker": "PIN_EXACT_VERSION"
+  }
 }
 ```
 

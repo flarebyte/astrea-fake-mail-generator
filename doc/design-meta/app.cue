@@ -7,26 +7,27 @@ modules: ["core"]
 reports: [{
  title: "Astrea fake email generator specification"
  filepath: "../design/specification.md"
- description: "Python CLI specification for reproducible inert email batches and bounded parser stress fixtures."
+ description: "Python CLI that generates repeatable folders of safe .eml test files, including optional parser stress cases."
  sections: [
 { title: "01 Product and delivery", sections: [
 { title: "01 Intent and scope", notes: ["astrea.overview"] },
-{ title: "02 CLI features", notes: ["astrea.features"] },
-{ title: "03 Regional coverage roadmap", notes: ["astrea.regions"] }
+{ title: "02 Glossary", notes: ["astrea.glossary"] },
+{ title: "03 CLI features", notes: ["astrea.features"] },
+{ title: "04 Regional coverage roadmap", notes: ["astrea.regions"] }
 ] },
 { title: "02 Fixture coverage", sections: [
 { title: "01 Fixture and use-case catalog", notes: ["astrea.fixtures"] },
 { title: "02 Client and provider profiles", notes: ["astrea.profiles"] }
 ] },
-{ title: "03 Implementation contracts", sections: [
+{ title: "03 Implementation rules", sections: [
 { title: "01 Technology choices", notes: ["astrea.tech"] },
-{ title: "02 CLI command contract", notes: ["astrea.cli"] },
-{ title: "03 Safety and determinism constraints", notes: ["astrea.constraints"] },
-{ title: "04 Generation and assertion contracts", notes: ["astrea.contracts"] }
+{ title: "02 CLI commands", notes: ["astrea.cli"] },
+{ title: "03 Safety and generation limits", notes: ["astrea.constraints"] },
+{ title: "04 Generation and test rules", notes: ["astrea.contracts"] }
 ] },
 { title: "04 Payload examples", sections: [
-{ title: "01 Resolved plan example", notes: ["astrea.plan"] },
-{ title: "02 Assertion manifest example", notes: ["astrea.manifest"] }
+{ title: "01 Generation plan example", notes: ["astrea.plan"] },
+{ title: "02 Generated-file manifest example", notes: ["astrea.manifest"] }
 ] }
 ]
 }]
@@ -36,13 +37,22 @@ notes: [
 	name: "astrea.overview",
 	title: "Intent and scope",
 	markdown: """
-Astrea is a proposed Python CLI for reproducible batches of inert `.eml` messages. Use `uv run --locked astrea` with seeded plans and machine-readable assertion manifests.
+Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
+
+A fixture defines a test case. `plan.json` records what to generate. `manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
 See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
 """,
 	labels: ["design", "md"]
+},
+{
+ name: "astrea.glossary",
+ title: "Glossary",
+ filepath: "examples/glossary.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
 },
 {
 	name: "astrea.tech",
@@ -81,39 +91,39 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 },
 {
 	name: "astrea.cli",
-	title: "CLI command contract",
+	title: "CLI commands",
 	filepath: "examples/cli.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.constraints",
-	title: "Safety and determinism constraints",
+	title: "Safety and generation limits",
 	filepath: "examples/constraints.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.contracts",
-	title: "Generation and assertion contracts",
+	title: "Generation and test rules",
 	markdown: """
-Plan exact message counts and complete thread groups before writing. Pin the toolchain, catalog, profiles, templates, and assets; derive independent component seeds and stable byte serialization. Record raw and semantic expectations independently of parser results.
+Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and software versions to reproduce a batch. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
 
-Keep ordinary output in `valid/` and explicitly selected parser stress cases in `stress/`. Stress content remains inert while structures may crash vulnerable parsers. Enforce byte, node, header, attachment, and depth limits and publish only a completely validated new directory.
+Write `.eml` files directly in one output folder with `plan.json` and `manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
 
-See [the complete packaging, planning, serialization, mutation, manifest, and acceptance contracts](../design-meta/examples/contracts.md).
+See [the complete generation rules](../design-meta/examples/contracts.md).
 """,
 	labels: ["design", "md"]
 },
 {
 	name: "astrea.plan",
-	title: "Resolved plan example",
+	title: "Generation plan example",
 	filepath: "examples/plan.example.json",
 	labels: ["design", "json"]
 },
 {
 	name: "astrea.manifest",
-	title: "Assertion manifest example",
+	title: "Generated-file manifest example",
 	filepath: "examples/manifest.example.json",
 	labels: ["design", "json"]
 }
