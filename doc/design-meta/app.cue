@@ -12,7 +12,7 @@ reports: [{
 { title: "01 Product and delivery", sections: [
 { title: "01 Intent and scope", notes: ["astrea.overview"] },
 { title: "02 CLI features", notes: ["astrea.features"] },
-{ title: "03 Regional delivery order", notes: ["astrea.regions"] }
+{ title: "03 Regional coverage roadmap", notes: ["astrea.regions"] }
 ] },
 { title: "02 Fixture coverage", sections: [
 { title: "01 Fixture and use-case catalog", notes: ["astrea.fixtures"] },
@@ -38,7 +38,7 @@ notes: [
 	markdown: """
 Astrea is a proposed Python CLI for reproducible batches of inert `.eml` messages. Use `uv run --locked astrea` with seeded plans and machine-readable assertion manifests.
 
-The MVP prioritizes UK and US English, European Latin-script content, synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later phases expand regional and non-Latin-script coverage.
+The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
 See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
 """,
@@ -67,7 +67,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 },
 {
 	name: "astrea.regions",
-	title: "Regional delivery order",
+	title: "Regional coverage roadmap",
 	filepath: "examples/regions.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]

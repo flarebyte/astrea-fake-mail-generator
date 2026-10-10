@@ -4,7 +4,7 @@ feature.seed,Deterministic seeds,MVP,must,Seed defaults to 0; derive separate pe
 feature.plan,Replayable batch plan,MVP,must,Versioned JSON plan with exact fixture allocations and resolved profiles,Saving and replaying plan reproduces checksums
 feature.coverage,Coverage mode,MVP,must,One instance of every selected fixture before cycling sorted IDs,Reject count below minimum; manifest summary gives exact per-fixture counts
 feature.weighted,Weighted allocation,Phase 2,should,Integer weights with largest-remainder allocation and stable ID ties,Exact count and allocations independent of iteration order
-feature.locale,Regional and script coverage,MVP,must,Prioritize UK then US then European Latin-script languages then Asia and other regions,Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT; later packs opt in
+feature.locale,Regional and script coverage,MVP,must,Build representative multilingual coverage from the MVP across Latin scripts Japanese and Arabic RTL; expand locale breadth in subsequent releases,Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; assert script encoding and text direction; later packs broaden coverage
 feature.profiles,Client and provider profiles,MVP,must,Separate versioned client profile and provider profile with compatibility registry,Each manifest lists both IDs revisions and ordered expected headers
 feature.headers,Rich predictable headers,MVP,must,From To Cc Reply-To Date Message-ID Subject MIME-Version plus optional trace list and threading headers,Assert header multiplicity ordering encoding and controlled values; Bcc absent from wire by default
 feature.text,Plain text,MVP,must,ASCII UTF-8 LF-to-CRLF normalization and explicit transfer encoding,Decoded body and charset match manifest

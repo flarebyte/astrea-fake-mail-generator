@@ -10,7 +10,7 @@ Python CLI specification for reproducible inert email batches and bounded parser
 
 Astrea is a proposed Python CLI for reproducible batches of inert `.eml` messages. Use `uv run --locked astrea` with seeded plans and machine-readable assertion manifests.
 
-The MVP prioritizes UK and US English, European Latin-script content, synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later phases expand regional and non-Latin-script coverage.
+The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
 See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
 
@@ -25,7 +25,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Saving and replaying plan reproduces checksums | Versioned JSON plan with exact fixture allocations and resolved profiles | Replayable batch plan | feature.plan | MVP | must |
 | Reject count below minimum; manifest summary gives exact per-fixture counts | One instance of every selected fixture before cycling sorted IDs | Coverage mode | feature.coverage | MVP | must |
 | Exact count and allocations independent of iteration order | Integer weights with largest-remainder allocation and stable ID ties | Weighted allocation | feature.weighted | Phase 2 | should |
-| Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT; later packs opt in | Prioritize UK then US then European Latin-script languages then Asia and other regions | Regional and script coverage | feature.locale | MVP | must |
+| Core pack includes en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; assert script encoding and text direction; later packs broaden coverage | Build representative multilingual coverage from the MVP across Latin scripts Japanese and Arabic RTL; expand locale breadth in subsequent releases | Regional and script coverage | feature.locale | MVP | must |
 | Each manifest lists both IDs revisions and ordered expected headers | Separate versioned client profile and provider profile with compatibility registry | Client and provider profiles | feature.profiles | MVP | must |
 | Assert header multiplicity ordering encoding and controlled values; Bcc absent from wire by default | From To Cc Reply-To Date Message-ID Subject MIME-Version plus optional trace list and threading headers | Rich predictable headers | feature.headers | MVP | must |
 | Decoded body and charset match manifest | ASCII UTF-8 LF-to-CRLF normalization and explicit transfer encoding | Plain text | feature.text | MVP | must |
@@ -46,21 +46,23 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | JSON catalog and plan stable for same inputs | List profiles fixtures locales and limits; plan without writing .eml | Catalog and preview | feature.inspect | MVP | must |
 | Document transformations and preserve original .eml hashes | Optional importer-friendly adapter with explicit From-line escaping | mbox export | feature.mbox | Later | could |
 
-### 03 Regional delivery order
+### 03 Regional coverage roadmap
 
-#### Regional delivery order
+#### Regional coverage roadmap
 
-| assertions | content_focus | delivery_order | id | locales | phase | region | scripts |
+| assertions | content_focus | delivery_stage | id | locales | phase | region | scripts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Locale recorded; deterministic offset from fixed dates; £ encoded correctly | GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later | 1 | region.uk | en_GB | MVP | United Kingdom | Latin |
-| No OS locale reliance; date prose and wire Date checked separately | USD receipts MM/DD/YYYY prose US spelling America/New_York | 2 | region.us | en_US | MVP | United States | Latin |
-| NFC accents preserved in subjects bodies display names and filenames | EUR receipts accents umlauts apostrophes and localized business prose | 3 | region.europe.latin | fr_FR;de_DE;es_ES;it_IT | MVP | Europe Latin scripts | Latin |
-| Script and normalization cases recorded; reviewed localized templates required | Diacritics Greek and Cyrillic after Latin baseline | 4 | region.europe.expanded | pt_PT;nl_NL;pl_PL;sv_SE;el_GR;uk_UA | Phase 2 | Europe broader coverage | Latin;Greek;Cyrillic |
-| Geography independent of script; template locale and effective Faker locale both recorded | INR SGD IDR VND dates Vietnamese combining-mark edge cases | 5 | region.asia.latin | en_IN;en_SG;id_ID;vi_VN | Phase 2 | Asia Latin and English baseline | Latin |
-| UTF-8 first; reviewed translations and fonts not assumed on recipient client | CJK wide characters mixed-script names local currency and no-space wrapping | 6 | region.asia.nonlatin | ja_JP;zh_CN;zh_TW;ko_KR;hi_IN;th_TH | Phase 2 | Asia additional scripts | Japanese;Han;Hangul;Devanagari;Thai |
-| No real street addresses payment details or reachable contacts | BRL MXN AUD ZAR local business fixtures | 7 | region.world.latin | pt_BR;es_MX;en_AU;en_ZA | Phase 3 | Rest of world Latin and English | Latin |
-| Explicit dir attributes and bidi code points in manifest; filenames remain generated ASCII | RTL body mixed-direction subjects and filenames | 8 | region.world.rtl | ar_EG;he_IL | Phase 3 | Middle East and additional RTL coverage | Arabic;Hebrew |
-| Unsupported locale rejected; provider fallback disclosed and never relabeled as translated content | Add locales only with reviewed content and fixture assertions | 9 | region.world.expanded | reviewed-locale-registry | Later | Additional regions | Multiple |
+| No OS locale reliance; date prose and wire Date checked separately | USD receipts MM/DD/YYYY prose US spelling America/New_York | 1 | region.us | en_US | MVP | United States | Latin |
+| NFC accents preserved in subjects bodies display names and filenames | EUR receipts accents umlauts apostrophes and localized business prose | 1 | region.europe.latin | fr_FR;de_DE;es_ES;it_IT | MVP | Europe Latin scripts | Latin |
+| Reviewed Japanese body; encoded subject and display name preserve Japanese characters | UTF-8 Japanese notifications mixed-script display names and subjects | 1 | region.asia.japan | ja_JP | MVP | Japan | Japanese |
+| HTML dir=rtl; bidi code points recorded; RFC 2047 subject and RFC 2231 filename; output paths remain ASCII | RTL appointment reminder mixed-script text and Unicode attachment filename | 1 | region.rtl.arabic | ar_EG | MVP | Arabic-language baseline (Egypt locale) | Arabic |
+| Script and normalization cases recorded; reviewed localized templates required | Broader diacritics Greek and Cyrillic coverage | 2 | region.europe.expanded | pt_PT;nl_NL;pl_PL;sv_SE;el_GR;uk_UA | Phase 2 | Europe broader coverage | Latin;Greek;Cyrillic |
+| Geography independent of script; template locale and effective Faker locale both recorded | INR SGD IDR VND dates Vietnamese combining-mark edge cases | 2 | region.asia.latin | en_IN;en_SG;id_ID;vi_VN | Phase 2 | Asia Latin and English baseline | Latin |
+| UTF-8 first; reviewed translations and fonts not assumed on recipient client | CJK wide characters mixed-script names local currency and no-space wrapping | 2 | region.asia.nonlatin | ja_JP;zh_CN;zh_TW;ko_KR;hi_IN;th_TH | Phase 2 | Asia additional scripts | Japanese;Han;Hangul;Devanagari;Thai |
+| No real street addresses payment details or reachable contacts | BRL MXN AUD ZAR local business fixtures | 3 | region.world.latin | pt_BR;es_MX;en_AU;en_ZA | Phase 3 | Rest of world Latin and English | Latin |
+| Explicit dir attributes and bidi code points in manifest; filenames remain generated ASCII | RTL body mixed-direction subjects and filenames | 3 | region.world.rtl | ar_EG;he_IL | Phase 3 | Middle East and additional RTL coverage | Arabic;Hebrew |
+| Unsupported locale rejected; provider fallback disclosed and never relabeled as translated content | Add locales only with reviewed content and fixture assertions | 4 | region.world.expanded | reviewed-locale-registry | Later | Additional regions | Multiple |
 
 ## 02 Fixture coverage
 
@@ -85,8 +87,10 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Body is zero decoded bytes; required headers retained | client.generic.v1 | feature.text | fixture.uk.empty | en_GB | text/plain | core | MVP | provider.generic.v1 | Empty message body | valid |
 | NFC and explicitly tagged NFD variants; RFC 2231 continuations; source code points asserted | client.thunderbird.v1 | feature.legacy;feature.encoding | fixture.fr.unicode | fr_FR | mixed(plain;txt) | encoding | Phase 2 | provider.generic.v1 | Normalization and filename variants | valid |
 | ISO-8859-1 or Windows-1252 selector; charset decoded text and raw bytes asserted | client.generic.v1 | feature.legacy | fixture.de.legacy | de_DE | text/plain | encoding | Phase 2 | provider.generic.v1 | Legacy Western encoding | valid |
+| ISO-2022-JP charset; transfer encoding and decoded Japanese text asserted | client.thunderbird.v1 | feature.locale;feature.legacy | fixture.jp.legacy | ja_JP | text/plain | encoding | Phase 2 | provider.generic.v1 | Legacy Japanese service notification | valid |
 | One variant per locale; local currency and reviewed body template | client.generic.v1 | feature.locale;feature.html | fixture.asia.latin | en_IN;en_SG;id_ID;vi_VN | alternative(plain;html) | asia-latin | Phase 2 | provider.generic.v1 | Regional receipt | valid |
-| Japanese subject body and name; UTF-8 default; ISO-2022-JP explicit variant | client.thunderbird.v1 | feature.locale;feature.legacy | fixture.jp.notification | ja_JP | alternative(plain;html) | asia-nonlatin | Phase 2 | provider.generic.v1 | Japanese service notification | valid |
+| Japanese subject body and display name; UTF-8; RFC 2047 subject; decoded Japanese characters preserved | client.thunderbird.v1 | feature.locale;feature.encoding | fixture.jp.notification | ja_JP | alternative(plain;html) | core | MVP | provider.generic.v1 | Japanese service notification | valid |
+| Arabic subject body display name and attachment filename; HTML dir=rtl; mixed Arabic and Latin digits; RFC 2231 filename; code points and decoded attachment hash asserted | client.generic.v1 | feature.locale;feature.html;feature.encoding;feature.attachments | fixture.ar.notification | ar_EG | mixed(alternative(plain;html);txt) | core | MVP | provider.generic.v1 | Arabic appointment reminder with text attachment | valid |
 | Separate simplified/traditional variants; Unicode subject and filename | client.generic.v1 | feature.locale;feature.encoding | fixture.cn.receipt | zh_CN;zh_TW | mixed(alternative(plain;html);pdf) | asia-nonlatin | Phase 2 | provider.generic.v1 | Chinese order receipt | valid |
 | One variant per locale; no silent English body fallback | client.generic.v1 | feature.locale;feature.encoding | fixture.asia.scripts | ko_KR;hi_IN;th_TH | text/plain | asia-nonlatin | Phase 2 | provider.generic.v1 | Multiscript appointment reminder | valid |
 | One variant per locale with local date and currency prose | client.generic.v1 | feature.locale;feature.html | fixture.world.latin | pt_BR;es_MX;en_AU;en_ZA | alternative(plain;html) | world-latin | Phase 3 | provider.generic.v1 | Regional delivery update | valid |

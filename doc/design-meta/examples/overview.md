@@ -2,14 +2,14 @@
 
 Astrea is a Python CLI that creates local batches of synthetic `.eml` messages for email-client rendering, MIME parsing, indexing, attachment handling, threading, and mailbox import tests. The proposed console entry point is `astrea`; the packaged project uses `pyproject.toml`, `uv.lock`, and `uv run --locked astrea`. These documents are specifications; the CLI is not implemented yet.
 
-The MVP delivers English and European Latin-script coverage, Gmail-style and Outlook-style delivery headers, Thunderbird-style desktop headers, plain text, HTML, inert attachments, nested MIME, and bounded parser stress cases. Subsequent phases broaden European scripts, Asia, and the rest of the world. Geography and writing system are independent: English and Latin-script Asian fixtures precede additional Asian scripts, while Greek and Cyrillic belong to European expansion. Here “Latin” means a writing system, including accented characters; it does not mean the Latin language.
+The MVP establishes representative multilingual test coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic. This initial set exercises accented Latin characters, Japanese characters, and right-to-left text alongside Gmail-style and Outlook-style delivery headers, Thunderbird-style desktop headers, plain text, HTML, inert attachments, nested MIME, and bounded parser stress cases. Subsequent releases expand regional and language coverage as reviewed templates become available. Delivery stages describe implementation scope and test diversity rather than a ranking of languages or communities. Geography and writing system are independent; “Latin” means a writing system, including accented characters, rather than the Latin language.
 
 ## Design inputs
 
 - `tech.csv`: selected runtime, development, and documentation technologies with rationale and official references.
 - `features.csv`: stable feature IDs, delivery phases, contracts, and acceptance criteria.
 - `fixtures.csv`: concrete fixture/use-case catalog, MIME shapes, locales, profile pairings, and assertions.
-- `regions.csv`: delivery order and regional language coverage.
+- `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
 - `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
