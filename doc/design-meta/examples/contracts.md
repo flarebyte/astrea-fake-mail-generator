@@ -37,6 +37,23 @@ The plan's `periods` specifies date ranges and email counts. Its `selection` cho
 
 Editable plans omit the computed `messages` array. `generate` computes it and includes it in the saved `batch.astrea-plan.json`. A saved plan is valid input for another run. When `messages` is present, check that it matches the plan settings and current fixture definitions; reject conflicts rather than silently changing the file list. Derive expected test results from fixture rules, not user-supplied expectations.
 
+## Example with header profiles
+
+`outlook.astrea-plan.json` selects three fixtures and sets both profiles explicitly:
+
+```json
+"client_profile": "client.outlook-desktop",
+"provider_profile": "provider.outlook"
+```
+
+The client profile adds example Outlook desktop headers such as `X-Mailer`, `Thread-Index`, and `Thread-Topic`. The provider profile adds example delivery headers such as `Received`, `Authentication-Results`, and `X-MS-Exchange-Organization-SCL`. All domain values still come from the plan's allowed `.test` domains. These are synthetic examples, not authenticated emails from Microsoft.
+
+The plan generates PDF invoices, forwarded emails, and Spanish travel confirmations: 30 files in January and 55 in February. All selected fixtures support this profile combination. Setting either profile to `null` uses that fixture's default for that profile.
+
+```sh
+uv run --locked astrea generate --plan doc/design-meta/examples/outlook.astrea-plan.json --out ./outlook-fixtures
+```
+
 ## Titled date periods
 
 A plan can generate different email counts for several periods:

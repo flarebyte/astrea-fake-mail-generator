@@ -31,6 +31,7 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
+- `outlook.astrea-plan.json`: January and February emails with explicit Outlook desktop and Outlook provider header profiles; includes PDF invoices, forwarded messages, and Spanish travel confirmations.
 - `monthly.astrea-plan.json`: a complete plan for January (30 emails) and February (55 emails), using ISO date ranges.
 - `example.astrea-domains.txt`: one allowed test domain per line; plans can use this file or an inline `domains` array.
 - `file-domains.astrea-plan.json`: example plan using the text-file domain source.

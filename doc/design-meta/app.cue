@@ -27,7 +27,7 @@ reports: [{
 { title: "05 Generation and test rules", notes: ["astrea.contracts"] }
 ] },
 { title: "04 Payload examples", sections: [
-{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan"] },
+{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan", "astrea.outlookplan"] },
 { title: "02 File-based domain list example", notes: ["astrea.domainfile", "astrea.domainplan"] },
 { title: "03 Generated-file manifest example", notes: ["astrea.manifest"] }
 ] }
@@ -136,6 +136,12 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
  name: "astrea.monthlyplan",
  title: "January 30 emails and February 55 emails",
  filepath: "examples/monthly.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.outlookplan",
+ title: "Plan with Outlook client and provider profiles",
+ filepath: "examples/outlook.astrea-plan.json",
  labels: ["design", "json"]
 },
 {

@@ -320,6 +320,58 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 }
 ```
 
+#### Plan with Outlook client and provider profiles
+
+```json
+{
+  "seed": 42,
+  "mode": "coverage",
+  "include_stress": false,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 64,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "selection": {
+    "packs": [
+      "core"
+    ],
+    "fixtures": [
+      "fixture.us.pdf",
+      "fixture.us.forward",
+      "fixture.es.encoded"
+    ],
+    "locales": [],
+    "client_profile": "client.outlook-desktop",
+    "provider_profile": "provider.outlook"
+  },
+  "fixture_parameters": {},
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 30
+    },
+    {
+      "id": "february-2025",
+      "title": "February 2025",
+      "start": "2025-02-01",
+      "end": "2025-02-28",
+      "count": 55
+    }
+  ]
+}
+```
+
 #### Generation plan example
 
 ```json
