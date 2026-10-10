@@ -39,7 +39,7 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.
 - `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
-- `example.astrea-plan.json` and `example.astrea-manifest.json`: example JSON documents for a single plain-text message. Zero hashes are placeholders, not reference test checksums.
+- `example.astrea-plan.json` and `example.astrea-manifest.json`: example plan and manifest for one plain-text email. The manifest includes real sizes and checksums for the accompanying hand-authored `000001-fixture.uk.plain.eml` reference file.
 
 CSV IDs remain stable. Semicolon-separated cells are ordered lists, not additional CSV columns. Fixture rows with multiple locales expand into distinct variants. MIME shape notation describes children in file order: `mixed`, `alternative`, and `related` mean `multipart/*`; `plain`, `html`, and attachment labels mean parts with no children. These files are the source specifications; `app.cue` assembles them into `doc/design/specification.md`.
 

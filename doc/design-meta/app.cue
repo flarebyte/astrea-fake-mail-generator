@@ -29,7 +29,7 @@ reports: [{
 { title: "04 Payload examples", sections: [
 { title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan", "astrea.outlookplan", "astrea.nestedplan"] },
 { title: "02 File-based domain list example", notes: ["astrea.domainfile", "astrea.domainplan"] },
-{ title: "03 Generated-file manifest example", notes: ["astrea.manifest"] }
+{ title: "03 Generated-file manifest example", notes: ["astrea.manifest", "astrea.referenceemail"] }
 ] }
 ]
 }]
@@ -167,6 +167,12 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 	title: "Generated-file manifest example",
 	filepath: "examples/example.astrea-manifest.json",
 	labels: ["design", "json"]
+},
+{
+ name: "astrea.referenceemail",
+ title: "Reference email matching the example manifest",
+ markdown: "The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.",
+ labels: ["design", "eml"]
 }
 ]
 

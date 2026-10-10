@@ -518,29 +518,50 @@ blue.test
 
 ```json
 {
-  "example_only": true,
   "seed": 42,
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
   "count": 1,
-  "total_message_bytes": 0,
+  "total_message_bytes": 705,
   "coverage": {
-    "minimum_messages": 1,
     "fixture_counts": {
       "fixture.uk.plain": 1
     }
   },
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 1,
+      "coverage": {
+        "minimum_messages": 1,
+        "fixture_counts": {
+          "fixture.uk.plain": 1
+        }
+      }
+    }
+  ],
   "assets": [],
   "messages": [
     {
       "index": 1,
+      "period_index": 0,
+      "period_id": "january-2025",
+      "date": "2025-01-16T12:00:00Z",
       "path": "000001-fixture.uk.plain.eml",
       "fixture_id": "fixture.uk.plain",
       "occurrence": 0,
+      "thread_member_index": 0,
+      "seed_key": "january-2025/fixture.uk.plain/en_GB/0/0",
       "locale": "en_GB",
       "region": "region.uk",
       "script": "Latin",
-      "effective_faker_locales": {
-        "name": "en_GB"
-      },
+      "effective_faker_locales": {},
       "profiles": {
         "client": {
           "id": "client.thunderbird"
@@ -550,8 +571,8 @@ blue.test
         }
       },
       "validity": "valid",
-      "size_bytes": 0,
-      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size_bytes": 705,
+      "sha256": "13cb9e95eeb60b5a98bc0edd0a142694c1025f46502e9e8704aeff15ce3b6792",
       "expectations": {
         "headers": {
           "ordered_names": [
@@ -574,15 +595,35 @@ blue.test
             "X-Mailer"
           ],
           "decoded_values": {
+            "Return-Path": "<morgan@example.test>",
+            "Received": [
+              "from newletter.test (newletter.test [192.0.2.10]) by blue.test; Thu, 16 Jan 2025 12:00:00 +0000",
+              "from blue.test (blue.test [192.0.2.20]) by newletter.test; Thu, 16 Jan 2025 12:00:00 +0000"
+            ],
             "From": "Morgan Ellis <morgan@example.test>",
             "To": "Alex Lane <alex@newletter.test>",
-            "Subject": "Meeting on Friday",
+            "Date": "Thu, 16 Jan 2025 12:00:00 +0000",
             "Message-ID": "<astrea-example-1@blue.test>",
-            "Date": "Thu, 16 Jan 2025 12:00:00 +0000"
+            "Subject": "Meeting on Friday",
+            "User-Agent": "Astrea Thunderbird-style test fixture",
+            "Content-Language": "en-GB",
+            "MIME-Version": "1.0",
+            "Content-Type": "text/plain; charset=\"utf-8\"",
+            "Content-Transfer-Encoding": "7bit"
           },
           "counts": {
+            "Return-Path": 1,
             "Received": 2,
-            "Subject": 1
+            "From": 1,
+            "To": 1,
+            "Date": 1,
+            "Message-ID": 1,
+            "Subject": 1,
+            "User-Agent": 1,
+            "Content-Language": 1,
+            "MIME-Version": 1,
+            "Content-Type": 1,
+            "Content-Transfer-Encoding": 1
           }
         },
         "body_facts": [
@@ -601,33 +642,20 @@ blue.test
               "disposition": null,
               "content_id": null,
               "transfer_encoding": "7bit",
-              "decoded_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+              "decoded_sha256": "8a3d1e02b1f4e204f43c351420e21f9d4ed16c5b800273c465015f50ca9d7733"
             }
           ]
         },
         "attachments": [],
         "thread": null,
         "stress": null
-      },
-      "seed_key": "january-2025/fixture.uk.plain/en_GB/0/0",
-      "period_id": "january-2025",
-      "date": "2025-01-16T12:00:00Z"
-    }
-  ],
-  "domains": [
-    "example.test",
-    "newletter.test",
-    "blue.test"
-  ],
-  "periods": [
-    {
-      "id": "january-2025",
-      "title": "January 2025",
-      "start": "2025-01-01",
-      "end": "2025-01-31",
-      "count": 1
+      }
     }
   ]
 }
 ```
+
+#### Reference email matching the example manifest
+
+The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.
 
