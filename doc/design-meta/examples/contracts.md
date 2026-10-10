@@ -12,13 +12,30 @@ Package the implementation under `src/astrea/` with an `astrea` console command.
 
 ```sh
 uv run --locked astrea list fixtures --json
-uv run --locked astrea plan --count 24 --seed 42 > custom123.astrea-plan.json
+uv run --locked astrea plan --template core > custom123.astrea-plan.json
+# Edit the JSON file to set count, seed, languages, and other settings.
+uv run --locked astrea plan --plan custom123.astrea-plan.json
 uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 uv run --locked astrea validate --input ./fixtures --json-diagnostics
-uv run --locked astrea generate --pack stress --include-stress --count 20 --out ./parser-stress
+uv run --locked astrea plan --template stress > parser-tests.astrea-plan.json
+uv run --locked astrea generate --plan parser-tests.astrea-plan.json --out ./parser-stress
 ```
 
 Implementation steps: check arguments, select supported fixtures, plan the files, build email parts, write email bytes, apply any requested format errors, check the results, and complete the output folder. Check client/provider profile combinations and fixture requirements before writing files.
+
+## Plan-driven generation
+
+`generate` requires `--plan <name>.astrea-plan.json` and `--out <folder>`. Its only additional option is `--json-diagnostics`. It has no count, seed, language, profile, depth, stress, or limit overrides. These settings belong in the plan so one file describes the whole test batch.
+
+`plan --template core` prints an editable normal-batch template. `plan --template stress` prints a template that selects the stress pack and sets `include_stress` to `true`. The default template is core. Each template includes the required fields and useful starting values. Edit the JSON to change the batch.
+
+`plan --plan <file>` checks an existing plan and prints a preview with the complete computed email list. It does not generate `.eml` files and cannot be combined with `--template`. This preview uses the same planning rules as `generate`.
+
+See `plan-fields.csv` for field names, defaults provided by templates, and validation rules. Required fields must be present in an input plan; `generate` never fills them from command-line options or environment variables. Fixture-specific optional settings use the documented fixture defaults.
+
+The plan's `selection` chooses packs, fixture IDs, locales, and optional profile overrides. `fixture_parameters` contains settings for individual fixtures, such as nesting depth, transfer encoding, or a deliberate format-error variant. `limits` contains the processing limits. The output location stays on the CLI so the same plan can generate the same batch in different folders.
+
+Editable plans omit the computed `messages` array. `generate` computes it and includes it in the saved `batch.astrea-plan.json`. A saved plan is valid input for another run. When `messages` is present, check that it matches the plan settings and current versioned fixture definitions; reject conflicts rather than silently changing the file list. Derive expected test results from fixture rules, not user-supplied expectations.
 
 ## Selecting cases and counting files
 
@@ -26,13 +43,13 @@ Only fixtures marked MVP are available in the first release. The core pack cover
 
 Each supported language or format-error variant is a separate test case. Sort selected cases by fixture ID, locale, and profile IDs so CSV row order does not change the result.
 
-Coverage mode generates every selected case once before repeating cases. The core pack contains 15 cases and needs at least 17 `.eml` files: most cases produce one file, while `fixture.uk.thread` produces three. `--count` counts files, including every email in a thread.
+Coverage mode generates every selected case once before repeating cases. The core pack contains 15 cases and needs at least 17 `.eml` files: most cases produce one file, while `fixture.uk.thread` produces three. The plan’s `count` counts files, including every email in a thread.
 
 After generating each case, repeat cases in the same order until the requested count is reached. Keep thread groups complete. Skip a group if it cannot fit the remaining count and try the next case. If no complete group fits, return `E_COVERAGE_COUNT`. A thread-only batch must have a count divisible by three. Never silently drop cases, cut a thread short, or change the requested count.
 
 Phase 2 adds weighted proportions. Use integer weights, round allocations to whole case groups, and use fixture IDs to break ties. Reject a request if its count cannot be met with complete groups.
 
-`--locale` selects existing language variants; it does not automatically translate fixtures. Reject incompatible filters rather than silently ignoring them. A saved plan already contains all choices, so only output location and diagnostic format may be added to `generate --plan`.
+The plan’s `selection.locales` selects existing language variants; it does not automatically translate fixtures. Reject incompatible selections rather than silently ignoring them. Empty fixture or locale lists mean all supported cases within the selected packs, not all cases in the entire catalog.
 
 Reject unknown JSON fields, unsupported versions, unavailable fixture/profile/error IDs, and conflicting settings. Derive expected test results from the fixture definitions rather than trusting values supplied in a plan.
 
@@ -58,7 +75,7 @@ Expected results cover both file bytes and decoded content. Check header order, 
 
 ## Parser stress cases
 
-Stress cases require explicit fixture selection and `--include-stress`. That flag alone does not select any cases. Content remains passive, but a weak parser may still crash on the structure. Astrea never automatically opens generated files or runs the parser being tested.
+Stress cases require a selected stress pack or fixture and `include_stress: true` in the plan. That setting alone does not select any cases. Content remains passive, but a weak parser may still crash on the structure. Astrea never automatically opens generated files or runs the parser being tested.
 
 Deep and wide MIME cases follow the format rules and have `validity: stress-valid`. Malformed cases break a specific format rule and have `validity: malformed`. Ordinary cases have `validity: valid`.
 
@@ -97,7 +114,7 @@ fixtures/
 
 This is an ordinary folder, not a mailbox format. Filenames use a six-digit index and the fixture ID. If stress cases are selected, their `.eml` files go in the same folder and are identified by fixture ID and the manifest's `validity` field.
 
-`batch.astrea-plan.json` is the saved input: selected fixtures, languages, profiles, seed, dates, counts, and limits. It contains no machine-specific output path.
+`batch.astrea-plan.json` saves the complete generation settings and the computed `messages` list. It contains selected fixtures, languages, profiles, seed, dates, count, fixture parameters, and limits. It contains no machine-specific output path.
 
 `batch.astrea-manifest.json` is the generated-file index and expected test results. It has one entry per `.eml` file containing:
 

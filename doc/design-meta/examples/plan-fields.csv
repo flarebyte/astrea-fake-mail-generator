@@ -1,0 +1,22 @@
+id,field,template_default,rule
+plan.schema,schema_version,1,Required JSON format version; reject unsupported versions
+plan.catalog,catalog_version,1,Required fixture catalog version; reject unavailable versions
+plan.generator,generator_version,current release,Required generator version; reject incompatible versions
+plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices
+plan.date,base_date,2025-01-15T12:00:00Z,Required UTC date and time; increment one minute per email file
+plan.count,count,100,Required total .eml file count including all thread members; maximum 10000
+plan.mode,mode,coverage,Required allocation mode; coverage includes every selected case; weighted is Phase 2
+plan.stress,include_stress,false,Required boolean; true permits explicitly selected stress cases but does not select them
+plan.packs,selection.packs,[core],Required list of named fixture groups; combine groups and remove duplicates
+plan.fixtures,selection.fixtures,[],Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection
+plan.locales,selection.locales,[],Required list of locale codes; empty uses all declared language variants; unknown or incompatible selections fail
+plan.client,selection.client_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
+plan.provider,selection.provider_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
+plan.parameters,fixture_parameters,{},Required map from selected fixture IDs to settings such as depth mutation_id or encoding; reject unknown fields and unused fixture IDs
+plan.depth,fixture_parameters.<fixture_id>.depth,6 normal; 32 stress,Optional nesting depth for the selected depth fixture; root depth 1; normal maximum 16; stress maximum 64
+plan.messagebytes,limits.max_message_bytes,5242880,Required serialized byte limit per email; users may lower it
+plan.batchbytes,limits.max_batch_bytes,268435456,Required total serialized email byte limit; users may lower it
+plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixtures still limited to 16; users may lower it
+plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it
+plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it
+plan.messages,messages,absent in editable templates,Optional computed file list in saved output plans; derive it from selections and validate it against them if present

@@ -13,3 +13,13 @@ flyb generate markdown --config doc/design-meta
 ```
 
 The proposed runtime command is `uv run --locked astrea`; implementation is not included yet.
+
+Generation settings belong in the plan file:
+
+```sh
+uv run --locked astrea plan --template core > custom123.astrea-plan.json
+# Edit the plan to select fixtures and set count, seed, and other settings.
+uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
+```
+
+`generate` accepts only `--plan`, `--out`, and optional `--json-diagnostics`. See [plan settings](doc/design-meta/examples/plan-fields.csv).

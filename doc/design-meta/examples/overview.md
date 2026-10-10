@@ -4,6 +4,14 @@ Astrea is a Python CLI that creates local batches of synthetic `.eml` messages f
 
 The MVP establishes representative multilingual test coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic. This initial set exercises accented Latin characters, Japanese characters, and right-to-left text alongside Gmail-style and Outlook-style delivery headers, Thunderbird-style desktop headers, plain text, HTML, inert attachments, nested MIME, and bounded parser stress cases. Subsequent releases expand regional and language coverage as reviewed templates become available. Delivery stages describe implementation scope and test diversity rather than a ranking of languages or communities. Geography and writing system are independent; “Latin” means a writing system, including accented characters, rather than the Latin language.
 
+## Plan-driven command
+
+```sh
+uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
+```
+
+All generation settings come from the plan: file count, fixture selection, languages, headers, seed, dates, nesting depth, stress cases, and limits. The command only selects the plan, output folder, and optional JSON error reporting. Use `astrea plan --template core` to get an editable starter plan.
+
 ## Fixtures, plans, and manifests
 
 A **fixture** is a test-case definition, such as an invoice with one PDF attachment. A **batch plan** records which fixtures and settings to generate. The **manifest** (`batch.astrea-manifest.json`) lists each generated `.eml` file, its source fixture, and the expected properties tests can check. It is an index of test files and expected results, not a mailbox format.
@@ -23,6 +31,7 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
+- `plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.
 - `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
 - `example.astrea-plan.json` and `example.astrea-manifest.json`: example version 1 JSON documents for a single plain-text message. Zero hashes are placeholders, not reference test checksums.
@@ -35,7 +44,7 @@ All content is invented, all email identities use reserved `.test` domains, and 
 
 “Safe content” and “safe to feed to every parser” are different guarantees. Opt-in stress fixtures intentionally exercise structural weaknesses: recursion, large sibling lists, malformed boundaries, duplicate headers, decoder recovery, truncation, and dangerous advertised attachment filenames. These contain no exploit code, malware, executable attachments, remote resources, or decompression bombs. A vulnerable parser can still crash or exhaust its resources. The CLI creates these files without automatically opening them; downstream tests should process them in isolated, bounded subprocesses.
 
-Stress generation is available in the MVP, requires explicit selection plus `--include-stress`, and always has hard caps. Normal batches exclude stress fixtures by default. Adding an arbitrary unbounded crash generator or exploit catalog is outside this design.
+Stress generation is available in the MVP, requires explicit selection plus `include_stress: true` in the plan, and always has hard caps. Normal batches exclude stress fixtures by default. Adding an arbitrary unbounded crash generator or exploit catalog is outside this design.
 
 ## Technology and standards basis
 

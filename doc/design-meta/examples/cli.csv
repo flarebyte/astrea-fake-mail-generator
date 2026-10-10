@@ -1,20 +1,9 @@
 id,command_or_option,phase,default,contract,example
-cli.generate,generate,MVP,core pack; 100 messages; seed 0,Create .eml files directly in a new output folder plus batch.astrea-plan.json and batch.astrea-manifest.json,uv run --locked astrea generate --out ./fixtures --count 100 --seed 42
-cli.pack,--pack,MVP,core,Combine named fixture groups; sort the selected cases consistently; stress cases also require --include-stress,--pack core
-cli.fixture,--fixture,MVP,all fixtures in selected packs,Select specific fixture IDs from the chosen packs; reject incompatible selections,--fixture fixture.uk.plain
-cli.count,--count,MVP,100,Number of .eml files including every message in a thread; minimum depends on selected cases; maximum 10000,--count 24
-cli.locale,--locale,MVP,language defined by the fixture,Select supported language variants; reject unknown languages or incompatible fixtures,--locale en_GB
-cli.client,--client-profile,MVP,fixture default,Use a different client header profile only if it supports the selected provider and fixture requirements,--client-profile client.thunderbird.v1
-cli.provider,--provider-profile,MVP,fixture default,Use a different provider header profile only if it supports the selected client and fixture requirements,--provider-profile provider.generic.v1
-cli.seed,--seed,MVP,0,Integer from 0 to 18446744073709551615; controls repeatable random content,--seed 42
-cli.date,--base-date,MVP,2025-01-15T12:00:00Z,UTC date and time in RFC 3339 format; increment by one minute for each generated email,--base-date 2025-01-15T12:00:00Z
-cli.mode,--mode,MVP,coverage,Coverage includes every selected case; weighted proportions are planned for Phase 2,--mode coverage
-cli.depth,--depth,MVP,6 for nested normal; 32 for stress depth,Root part has depth 1; normal limit 16; stress limit 64; applies to nested fixtures,--depth 8
-cli.stress,--include-stress,MVP,false,Required when selecting any stress fixture; this flag alone does not select stress cases,--pack stress --include-stress
-cli.plan,plan,MVP,same options as generate,Print the complete generation plan as JSON without creating files,uv run --locked astrea plan --count 24 --seed 42
-cli.planfile,generate --plan,MVP,none,Read an explicitly selected .astrea-plan.json file; check fields and version; only --out and --json-diagnostics may accompany it,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
+cli.generate,generate,MVP,plan and output folder required,Read all generation settings from the plan; only --plan --out and --json-diagnostics are accepted,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
+cli.plan,plan,MVP,core template,Print an editable plan template as JSON; --template core or stress; does not create email files,uv run --locked astrea plan --template core > custom123.astrea-plan.json
+cli.planfile,generate --plan,MVP,none,Required .astrea-plan.json input; check settings and version before writing; reject generation-setting CLI overrides,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
+cli.preview,plan --plan,MVP,plan required,Read and check an existing plan; print the full file list and settings as JSON; cannot combine with --template,uv run --locked astrea plan --plan custom123.astrea-plan.json
 cli.list,list fixtures/profiles/locales/packs,MVP,text,List IDs versions supported combinations and minimum file counts; --json supported,uv run --locked astrea list fixtures --json
 cli.validate,validate --input,MVP,none,Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules,uv run --locked astrea validate --input ./fixtures --json-diagnostics
-cli.limits,--max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes,MVP,fixed maximums,Allow smaller limits; reject values above the fixed maximums,--max-message-bytes 1048576
 cli.diagnostics,--json-diagnostics,MVP,false,Write error code message affected field and limits as JSON to stderr; keep stdout for command results,--json-diagnostics
 cli.version,--version,MVP,none,Print generator fixture catalog and JSON format versions,uv run --locked astrea --version

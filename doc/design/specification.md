@@ -10,6 +10,8 @@ Python CLI that generates repeatable folders of safe .eml test files, including 
 
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format.
+
 A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
@@ -28,10 +30,10 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | 100 .eml files in ./fixtures | glossary.batch | All email files produced by one generate command. | Batch |
 | core for normal test cases; stress for parser robustness tests | glossary.pack | A named group of fixture definitions. | Pack |
 | list fixtures --json | glossary.catalog | The list of supported fixtures packs languages and header profiles with their versions. | Fixture catalog |
-| batch.astrea-plan.json selects fixture IDs counts seed and languages | glossary.plan | JSON describing what to generate and which settings to use. It is the input used to repeat a batch. | Batch plan |
+| batch.astrea-plan.json selects fixture IDs counts seed and languages | glossary.plan | The required JSON input to generate. It sets fixtures file count languages headers seed dates stress permission and limits. | Batch plan |
 | A file uses fixture.us.pdf and should contain one PDF attachment | glossary.manifest | The output index in batch.astrea-manifest.json. It lists generated email files their source fixtures checksums and expected test results. | Manifest |
 | Subject equals Meeting on Friday; Bcc is absent | glossary.assertion | A property that a test checks against an expected value. | Assertion |
-| --seed 42 | glossary.seed | An integer that controls generated random values. Same inputs and software versions give the same output. | Seed |
+| seed: 42 in an .astrea-plan.json file | glossary.seed | An integer that controls generated random values. Same inputs and software versions give the same output. | Seed |
 | sha256 in a manifest entry identifies the exact .eml bytes | glossary.checksum | A fingerprint of file bytes used to check that content has not changed. | SHA-256 checksum |
 | client.thunderbird.v1 with provider.generic.v1 | glossary.profile | A named set of example headers and formatting rules for a client or provider. Profiles use synthetic values. | Header profile |
 | en_GB for UK English; ja_JP for Japanese; ar_EG for Arabic | glossary.locale | A language and regional variant used for text and formatting. | Locale |
@@ -59,7 +61,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | --- | --- | --- | --- | --- | --- |
 | The folder contains exactly one .eml file for each manifest entry | Create the requested number of .eml files in a new folder; default 100 | Generate a folder of .eml files | feature.batch | MVP | must |
 | Same inputs and software versions produce identical email files and batch.astrea-manifest.json | Use seed 0 by default; derive a separate random seed for each email and content field | Repeatable generation | feature.seed | MVP | must |
-| Running the saved plan produces the same files and SHA-256 checksums | Save selected fixtures counts languages and header profiles in batch.astrea-plan.json | Saved generation plan | feature.plan | MVP | must |
+| No generation-setting CLI overrides; replaying the saved plan produces identical files and checksums | Require an .astrea-plan.json file for generate; read fixtures counts languages profiles seed dates parameters and limits from it; save the full plan in the batch | Saved generation plan | feature.plan | MVP | must |
 | Reject counts too small to include all selected cases; report how many files each fixture produced | Generate each selected fixture variant at least once before repeating cases | Include every selected test case | feature.coverage | MVP | must |
 | Produce the requested file count; use fixture IDs to break allocation ties; reject counts that cannot fit complete groups | Phase 2: assign integer weights to fixtures and convert them to whole test-case groups; keep thread groups complete | Control fixture proportions | feature.weighted | Phase 2 | should |
 | Core fixtures cover en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; check characters encoding and text direction | Start with English European Latin-script languages Japanese and Arabic RTL; add more languages in later releases | Language and writing-system coverage | feature.locale | MVP | must |
@@ -74,7 +76,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Check both encoded file bytes and decoded text or attachment contents | Support 7bit quoted-printable and base64; encode non-ASCII headers with RFC 2047 and filenames with RFC 2231 | Standard email encodings | feature.encoding | MVP | must |
 | Reject text that the chosen encoding cannot represent; never silently replace characters | Phase 2: support ISO-8859-1 Windows-1252 ISO-2022-JP and GB18030; add a separate profile for raw UTF-8 headers | Older character encodings | feature.legacy | Phase 2 | should |
 | Tests can find each file and check what should be present or absent; expectations come from the fixture rules | Write batch.astrea-manifest.json with one entry per .eml file: source fixture checksum and expected headers text parts and attachments | Generated-file index and expected results | feature.manifest | MVP | must |
-| Record each deliberate error or stress parameter and the expected safe parser response | Require both explicit stress-case selection and --include-stress; generate deep wide or intentionally malformed emails within fixed limits | Parser robustness test cases | feature.stress | MVP | must |
+| Record each deliberate error or stress parameter and the expected safe parser response | Require both explicit stress-case selection and include_stress: true in the plan; generate deep wide or intentionally malformed emails within fixed limits | Parser robustness test cases | feature.stress | MVP | must |
 | Reject requests exceeding limits; leave no completed output folder after failure | Check maximum files bytes parts headers depth and attachments before and during generation | Generation limits | feature.limits | MVP | must |
 | Generation works with networking disabled; all attachment contents are reviewed and passive | Generate locally from packaged templates and attachments without sending email or fetching content | Offline generation and safe content | feature.offline | MVP | must |
 | Detect changed or missing files; check planned errors in stress cases without unbounded parsing | Check file checksums attachment contents expected headers selected cases and normal MIME structure | Check a generated batch | feature.validate | MVP | must |
@@ -185,27 +187,44 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | command_or_option | contract | default | example | id | phase |
 | --- | --- | --- | --- | --- | --- |
-| generate | Create .eml files directly in a new output folder plus batch.astrea-plan.json and batch.astrea-manifest.json | core pack; 100 messages; seed 0 | uv run --locked astrea generate --out ./fixtures --count 100 --seed 42 | cli.generate | MVP |
-| --pack | Combine named fixture groups; sort the selected cases consistently; stress cases also require --include-stress | core | --pack core | cli.pack | MVP |
-| --fixture | Select specific fixture IDs from the chosen packs; reject incompatible selections | all fixtures in selected packs | --fixture fixture.uk.plain | cli.fixture | MVP |
-| --count | Number of .eml files including every message in a thread; minimum depends on selected cases; maximum 10000 | 100 | --count 24 | cli.count | MVP |
-| --locale | Select supported language variants; reject unknown languages or incompatible fixtures | language defined by the fixture | --locale en_GB | cli.locale | MVP |
-| --client-profile | Use a different client header profile only if it supports the selected provider and fixture requirements | fixture default | --client-profile client.thunderbird.v1 | cli.client | MVP |
-| --provider-profile | Use a different provider header profile only if it supports the selected client and fixture requirements | fixture default | --provider-profile provider.generic.v1 | cli.provider | MVP |
-| --seed | Integer from 0 to 18446744073709551615; controls repeatable random content | 0 | --seed 42 | cli.seed | MVP |
-| --base-date | UTC date and time in RFC 3339 format; increment by one minute for each generated email | 2025-01-15T12:00:00Z | --base-date 2025-01-15T12:00:00Z | cli.date | MVP |
-| --mode | Coverage includes every selected case; weighted proportions are planned for Phase 2 | coverage | --mode coverage | cli.mode | MVP |
-| --depth | Root part has depth 1; normal limit 16; stress limit 64; applies to nested fixtures | 6 for nested normal; 32 for stress depth | --depth 8 | cli.depth | MVP |
-| --include-stress | Required when selecting any stress fixture; this flag alone does not select stress cases | false | --pack stress --include-stress | cli.stress | MVP |
-| plan | Print the complete generation plan as JSON without creating files | same options as generate | uv run --locked astrea plan --count 24 --seed 42 | cli.plan | MVP |
-| generate --plan | Read an explicitly selected .astrea-plan.json file; check fields and version; only --out and --json-diagnostics may accompany it | none | uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures | cli.planfile | MVP |
+| generate | Read all generation settings from the plan; only --plan --out and --json-diagnostics are accepted | plan and output folder required | uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures | cli.generate | MVP |
+| plan | Print an editable plan template as JSON; --template core or stress; does not create email files | core template | uv run --locked astrea plan --template core > custom123.astrea-plan.json | cli.plan | MVP |
+| generate --plan | Required .astrea-plan.json input; check settings and version before writing; reject generation-setting CLI overrides | none | uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures | cli.planfile | MVP |
+| plan --plan | Read and check an existing plan; print the full file list and settings as JSON; cannot combine with --template | plan required | uv run --locked astrea plan --plan custom123.astrea-plan.json | cli.preview | MVP |
 | list fixtures/profiles/locales/packs | List IDs versions supported combinations and minimum file counts; --json supported | text | uv run --locked astrea list fixtures --json | cli.list | MVP |
 | validate --input | Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules | none | uv run --locked astrea validate --input ./fixtures --json-diagnostics | cli.validate | MVP |
-| --max-message-bytes/--max-batch-bytes/--max-parts/--max-header-bytes | Allow smaller limits; reject values above the fixed maximums | fixed maximums | --max-message-bytes 1048576 | cli.limits | MVP |
 | --json-diagnostics | Write error code message affected field and limits as JSON to stderr; keep stdout for command results | false | --json-diagnostics | cli.diagnostics | MVP |
 | --version | Print generator fixture catalog and JSON format versions | none | uv run --locked astrea --version | cli.version | MVP |
 
-### 03 Safety and generation limits
+### 03 Plan settings
+
+#### Plan settings
+
+| field | id | rule | template_default |
+| --- | --- | --- | --- |
+| schema_version | plan.schema | Required JSON format version; reject unsupported versions | 1 |
+| catalog_version | plan.catalog | Required fixture catalog version; reject unavailable versions | 1 |
+| generator_version | plan.generator | Required generator version; reject incompatible versions | current release |
+| seed | plan.seed | Required integer from 0 to 18446744073709551615; controls repeatable random choices | 0 |
+| base_date | plan.date | Required UTC date and time; increment one minute per email file | 2025-01-15T12:00:00Z |
+| count | plan.count | Required total .eml file count including all thread members; maximum 10000 | 100 |
+| mode | plan.mode | Required allocation mode; coverage includes every selected case; weighted is Phase 2 | coverage |
+| include_stress | plan.stress | Required boolean; true permits explicitly selected stress cases but does not select them | false |
+| selection.packs | plan.packs | Required list of named fixture groups; combine groups and remove duplicates | [core] |
+| selection.fixtures | plan.fixtures | Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection | [] |
+| selection.locales | plan.locales | Required list of locale codes; empty uses all declared language variants; unknown or incompatible selections fail | [] |
+| selection.client_profile | plan.client | Required field; null uses each fixture default; a profile ID overrides it only when compatible | null |
+| selection.provider_profile | plan.provider | Required field; null uses each fixture default; a profile ID overrides it only when compatible | null |
+| fixture_parameters | plan.parameters | Required map from selected fixture IDs to settings such as depth mutation_id or encoding; reject unknown fields and unused fixture IDs | {} |
+| fixture_parameters.<fixture_id>.depth | plan.depth | Optional nesting depth for the selected depth fixture; root depth 1; normal maximum 16; stress maximum 64 | 6 normal; 32 stress |
+| limits.max_message_bytes | plan.messagebytes | Required serialized byte limit per email; users may lower it | 5242880 |
+| limits.max_batch_bytes | plan.batchbytes | Required total serialized email byte limit; users may lower it | 268435456 |
+| limits.max_depth | plan.maxdepth | Required overall depth ceiling; normal fixtures still limited to 16; users may lower it | 64 |
+| limits.max_parts | plan.parts | Required total MIME part limit per email including containers; users may lower it | 1000 |
+| limits.max_header_bytes | plan.headers | Required total header byte limit per email including nested headers; users may lower it | 65536 |
+| messages | plan.messages | Optional computed file list in saved output plans; derive it from selections and validate it against them if present | absent in editable templates |
+
+### 04 Safety and generation limits
 
 #### Safety and generation limits
 
@@ -215,7 +234,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Offline generation | constraint.network | All templates profiles and assets shipped locally; no SMTP IMAP HTTP DNS or filesystem reads outside configured plan and packaged assets | Network-denied integration generation |
 | Inert content | constraint.links | HTML limited to passive tags and inline styling; no scripts events forms frames remote styles external images or data URIs; href values only https://example.test/... | Allowlist HTML validation and decoded URL checks |
 | Attachments | constraint.assets | Reviewed PNG JPEG PDF TXT CSV only; no executables macros archives decompression bombs EICAR or exploit payloads | Asset inventory SHA-256 sizes media types dimensions and review metadata |
-| Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and --include-stress; mark each file in batch.astrea-manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
+| Normal and stress cases | constraint.validity | Normal fixtures follow email and MIME standards; stress cases require explicit selection and include_stress: true in the plan; mark each file in batch.astrea-manifest.json | Normal emails have no deliberate format errors; stress entries list their planned errors or stress parameters |
 | Count and bytes | constraint.resources | Max 10000 messages; max 5242880 serialized bytes per message; max 268435456 serialized bytes per batch | Estimate size before writing and count actual bytes while writing; never complete a partial batch |
 | MIME structure | constraint.structure | Normal maximum depth 16; stress maximum depth 64; maximum 1000 MIME parts per email including containers and attached email roots | Count parts and depth without unlimited recursion; check limits while writing |
 | Header budgets | constraint.headers | Max total raw headers across entire message 65536 bytes; max raw single header field 16384 bytes; valid lines at most 998 octets | Count header bytes before completing output; stress headers must still fit byte limits |
@@ -231,7 +250,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Output scope | constraint.scope | Generate a folder of .eml files and supporting JSON only; Maildir mbox mailbox export import and delivery are out of scope | No mailbox-format output options export/import commands account access or network delivery commands |
 | Astrea JSON filenames | constraint.filenames | Plans use <name>.astrea-plan.json; manifests use <name>.astrea-manifest.json; future config files use <name>.astrea-<purpose>.<format> with the actual format extension | Check suffix and contents; reject invalid JSON or versions; validation requires exactly one manifest in the batch folder |
 
-### 04 Generation and test rules
+### 05 Generation and test rules
 
 #### Generation and test rules
 
@@ -260,23 +279,24 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
   "limits": {
     "max_message_bytes": 5242880,
     "max_batch_bytes": 268435456,
-    "max_depth": 16,
+    "max_depth": 64,
     "max_parts": 1000,
     "max_header_bytes": 65536
   },
-  "messages": [
-    {
-      "index": 1,
-      "fixture_id": "fixture.uk.plain",
-      "occurrence": 0,
-      "thread_member_index": 0,
-      "locale": "en_GB",
-      "client_profile": "client.thunderbird.v1",
-      "provider_profile": "provider.generic.v1",
-      "validity": "valid",
-      "parameters": {}
-    }
-  ]
+  "selection": {
+    "packs": [
+      "core"
+    ],
+    "fixtures": [
+      "fixture.uk.plain"
+    ],
+    "locales": [
+      "en_GB"
+    ],
+    "client_profile": null,
+    "provider_profile": null
+  },
+  "fixture_parameters": {}
 }
 ```
 

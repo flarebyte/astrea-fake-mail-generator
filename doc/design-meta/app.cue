@@ -22,8 +22,9 @@ reports: [{
 { title: "03 Implementation rules", sections: [
 { title: "01 Technology choices", notes: ["astrea.tech"] },
 { title: "02 CLI commands", notes: ["astrea.cli"] },
-{ title: "03 Safety and generation limits", notes: ["astrea.constraints"] },
-{ title: "04 Generation and test rules", notes: ["astrea.contracts"] }
+{ title: "03 Plan settings", notes: ["astrea.planfields"] },
+{ title: "04 Safety and generation limits", notes: ["astrea.constraints"] },
+{ title: "05 Generation and test rules", notes: ["astrea.contracts"] }
 ] },
 { title: "04 Payload examples", sections: [
 { title: "01 Generation plan example", notes: ["astrea.plan"] },
@@ -38,6 +39,8 @@ notes: [
 	title: "Intent and scope",
 	markdown: """
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
+
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format.
 
 A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
@@ -95,6 +98,13 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 	filepath: "examples/cli.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
+},
+{
+ name: "astrea.planfields",
+ title: "Plan settings",
+ filepath: "examples/plan-fields.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
 },
 {
 	name: "astrea.constraints",
