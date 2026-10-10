@@ -1,6 +1,5 @@
 {
   "seed": 42,
-  "mode": "coverage",
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,

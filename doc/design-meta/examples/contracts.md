@@ -95,7 +95,7 @@ Only fixtures marked MVP are available in the first release. The core pack cover
 
 Each supported language or format-error variant is a separate test case. Sort selected cases by fixture ID, locale, and profile IDs so CSV row order does not change the result.
 
-Coverage mode generates every selected case once in each period before repeating cases. The core pack contains 15 cases and needs at least 17 `.eml` files per period: most cases produce one file, while `fixture.uk.thread` produces three. Each period’s `count` counts files, including every email in a thread.
+Generation always includes every selected case once in each period before repeating cases. There is no `mode` setting. The core pack contains 15 cases and needs at least 17 `.eml` files per period: most cases produce one file, while `fixture.uk.thread` produces three. Each period’s `count` counts files, including every email in a thread.
 
 Within each period, after generating each case, repeat cases in the same order until that period’s requested count is reached. Keep thread groups complete. Skip a group if it cannot fit the remaining count and try the next case. If no complete group fits, return `E_COVERAGE_COUNT`. A thread-only batch must have a count divisible by three. Never silently drop cases, cut a thread short, or change the requested count.
 

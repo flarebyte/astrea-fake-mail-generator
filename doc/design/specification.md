@@ -212,7 +212,6 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | periods[].start | plan.periodstart | Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day | 2025-01-01 |
 | periods[].end | plan.periodend | Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start | 2025-01-31 |
 | periods[].count | plan.periodcount | Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period | 100 |
-| mode | plan.mode | Required allocation mode; coverage includes every selected case; weighted is Phase 2 | coverage |
 | include_stress | plan.stress | Required boolean; true permits explicitly selected stress cases but does not select them | false |
 | selection.packs | plan.packs | Required list of named fixture groups; combine groups and remove duplicates | [core] |
 | selection.fixtures | plan.fixtures | Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection | [] |
@@ -277,7 +276,6 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 ```json
 {
   "seed": 42,
-  "mode": "coverage",
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,
@@ -325,7 +323,6 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 ```json
 {
   "seed": 42,
-  "mode": "coverage",
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,
@@ -377,7 +374,6 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 ```json
 {
   "seed": 42,
-  "mode": "coverage",
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,
@@ -432,7 +428,6 @@ blue.test
 ```json
 {
   "seed": 42,
-  "mode": "coverage",
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,

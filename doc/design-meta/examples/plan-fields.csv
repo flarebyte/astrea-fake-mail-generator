@@ -6,7 +6,6 @@ plan.periodtitle,periods[].title,January 2025,Required nonempty documentation ti
 plan.periodstart,periods[].start,2025-01-01,Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day
 plan.periodend,periods[].end,2025-01-31,Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start
 plan.periodcount,periods[].count,100,Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period
-plan.mode,mode,coverage,Required allocation mode; coverage includes every selected case; weighted is Phase 2
 plan.stress,include_stress,false,Required boolean; true permits explicitly selected stress cases but does not select them
 plan.packs,selection.packs,[core],Required list of named fixture groups; combine groups and remove duplicates
 plan.fixtures,selection.fixtures,[],Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection
