@@ -1,7 +1,4 @@
 id,field,template_default,rule
-plan.schema,schema_version,1,Required JSON format version; reject unsupported versions
-plan.catalog,catalog_version,1,Required fixture catalog version; reject unavailable versions
-plan.generator,generator_version,current release,Required generator version; reject incompatible versions
 plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices
 plan.periods,periods,one January 2025 period with 100 emails,Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000
 plan.periodid,periods[].id,january-2025,Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links

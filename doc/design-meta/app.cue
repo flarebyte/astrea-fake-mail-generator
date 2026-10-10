@@ -118,7 +118,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 	name: "astrea.contracts",
 	title: "Generation and test rules",
 	markdown: """
-Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and software versions to reproduce a batch. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
+Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and installed software to reproduce a batch. Plans and manifests have no version fields; only the current format is supported. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
 
 Write `.eml` files directly in one output folder with `batch.astrea-plan.json` and `batch.astrea-manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
 

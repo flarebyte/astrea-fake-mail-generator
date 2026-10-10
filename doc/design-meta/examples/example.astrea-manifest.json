@@ -1,9 +1,5 @@
 {
-  "schema_version": 1,
   "example_only": true,
-  "generator_version": "0.1.0-example",
-  "catalog_version": "1",
-  "template_revision": "example",
   "seed": 42,
   "count": 1,
   "total_message_bytes": 0,
@@ -28,12 +24,10 @@
       },
       "profiles": {
         "client": {
-          "id": "client.thunderbird.v1",
-          "revision": "1"
+          "id": "client.thunderbird"
         },
         "provider": {
-          "id": "provider.generic.v1",
-          "revision": "1"
+          "id": "provider.generic"
         }
       },
       "validity": "valid",
@@ -101,11 +95,6 @@
       "date": "2025-01-16T12:00:00Z"
     }
   ],
-  "software_versions": {
-    "python": "PIN_EXACT_PATCH",
-    "uv_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-    "faker": "PIN_EXACT_VERSION"
-  },
   "domains": [
     "example.test",
     "newletter.test",

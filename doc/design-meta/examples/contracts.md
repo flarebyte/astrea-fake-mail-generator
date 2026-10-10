@@ -35,7 +35,7 @@ See `plan-fields.csv` for field names, defaults provided by templates, and valid
 
 The plan's `periods` specifies date ranges and email counts. Its `selection` chooses packs, fixture IDs, locales, and optional profile overrides. `fixture_parameters` contains settings for individual fixtures, such as nesting depth, transfer encoding, or a deliberate format-error variant. `limits` contains the processing limits. The output location stays on the CLI so the same plan can generate the same batch in different folders.
 
-Editable plans omit the computed `messages` array. `generate` computes it and includes it in the saved `batch.astrea-plan.json`. A saved plan is valid input for another run. When `messages` is present, check that it matches the plan settings and current versioned fixture definitions; reject conflicts rather than silently changing the file list. Derive expected test results from fixture rules, not user-supplied expectations.
+Editable plans omit the computed `messages` array. `generate` computes it and includes it in the saved `batch.astrea-plan.json`. A saved plan is valid input for another run. When `messages` is present, check that it matches the plan settings and current fixture definitions; reject conflicts rather than silently changing the file list. Derive expected test results from fixture rules, not user-supplied expectations.
 
 ## Titled date periods
 
@@ -86,7 +86,7 @@ Phase 2 adds weighted proportions. For each period, use integer weights, round a
 
 The plan’s `selection.locales` selects existing language variants; it does not automatically translate fixtures. Reject incompatible selections rather than silently ignoring them. Empty fixture or locale lists mean all supported cases within the selected packs, not all cases in the entire catalog.
 
-Reject unknown JSON fields, unsupported versions, unavailable fixture/profile/error IDs, and conflicting settings. Derive expected test results from the fixture definitions rather than trusting values supplied in a plan.
+Reject unknown JSON fields, unavailable fixture/profile/error IDs, and conflicting settings. Support only the current plan format; there are no format-version fields, compatibility modes, or migrations. Derive expected test results from the fixture definitions rather than trusting values supplied in a plan.
 
 ## Configurable test domains
 
@@ -120,9 +120,9 @@ The saved batch plan replaces `domain_file` with the normalized `domains` array.
 
 ## Making output repeatable
 
-The same plan and software versions must produce identical email bytes and JSON output. Record generator, fixture catalog, template, profile, Python, and dependency versions.
+The same plan and installed software must produce identical email bytes and JSON output. Use uv.lock to keep dependencies consistent. Plans and manifests do not contain version fields; repeatability across software updates is not guaranteed.
 
-Use the batch seed to derive separate seeds for each email and content field. For implementation, hash consistently formatted JSON with SHA-256. Include format version, batch seed, period ID, fixture ID, locale, repetition index within the period, thread member index, and field name. Do not include the period title or global file index. This keeps one field's random choices from affecting another field.
+Use the batch seed to derive separate seeds for each email and content field. For implementation, hash consistently formatted JSON with SHA-256. Include batch seed, period ID, fixture ID, locale, repetition index within the period, thread member index, and field name. Do not include the period title or global file index. This keeps one field's random choices from affecting another field.
 
 Fix dates, message IDs, MIME boundaries, header order, line wrapping, encodings, and attachment bytes. Do not use the current time, machine name, local language settings, Python `hash()`, global random state, or directory listing order. Use Unicode NFC normalization except when a fixture explicitly tests another form. Keep existing message IDs stable when the requested count increases.
 
@@ -161,7 +161,7 @@ Use `<name>.astrea-<purpose>.json` for Astrea-owned JSON files. The last extensi
 - Domain lists end in `.astrea-domains.txt`, for example `custom123.astrea-domains.txt`.
 - Any future Astrea configuration file follows the same pattern with its own purpose name and real format extension.
 
-Generated batches use `batch.astrea-plan.json` and `batch.astrea-manifest.json` by default. Saved plans may use another prefix. `generate --plan` requires the plan suffix and checks the JSON fields and version; a filename alone does not prove valid contents. `validate --input` finds the single file ending in `.astrea-manifest.json` in the supplied folder and reports an error if none or more than one exists. It checks the contents before using them. It does not scan for plan files; use `generate --plan` to choose a saved plan explicitly.
+Generated batches use `batch.astrea-plan.json` and `batch.astrea-manifest.json` by default. Saved plans may use another prefix. `generate --plan` requires the plan suffix and checks the JSON fields and settings; a filename alone does not prove valid contents. `validate --input` finds the single file ending in `.astrea-manifest.json` in the supplied folder and reports an error if none or more than one exists. It checks the contents before using them. It does not scan for plan files; use `generate --plan` to choose a saved plan explicitly.
 
 The `.eml` extension stays unchanged. `app.cue` and `uv.lock` belong to flyb and uv, so their tool-defined names stay unchanged.
 
@@ -190,16 +190,16 @@ This is an ordinary folder, not a mailbox format. Filenames use a six-digit inde
 - Expected headers, decoded text, MIME parts, attachments, and reply links.
 - Deliberate format errors or stress parameters, when applicable.
 
-Batch-level fields record software versions, seed, total bytes, and file counts by fixture. A `periods` summary repeats each ID, title, range, and actual count; the manifest’s top-level `count` is the derived total. Record coverage counts separately for each period. The `assets` list describes the packaged attachments used: ID, type, size, checksum, source, license, and safety review version. Attachments are embedded in the `.eml` files; they are not extracted into another folder. Omit the current time, host paths, and local usernames from metadata.
+Batch-level fields record seed, total bytes, and file counts by fixture. A `periods` summary repeats each ID, title, range, and actual count; the manifest’s top-level `count` is the derived total. Record coverage counts separately for each period. The `assets` list describes the packaged attachments used: ID, type, size, checksum, source, license, and safety review record. Attachments are embedded in the `.eml` files; they are not extracted into another folder. Omit the current time, host paths, and local usernames from metadata.
 
 For example, `fixture.us.pdf` defines an invoice case. Its manifest entry points to the generated file and says that tests should find one `application/pdf` attachment with a known filename and checksum. The fixture is the definition; the manifest describes its generated instance.
 
-`example.astrea-plan.json` shows inline domains; `file-domains.astrea-plan.json` shows a local domain-file reference. `example.astrea-domains.txt` contains the matching text list. `example.astrea-manifest.json` shows proposed output fields. Zero checksums, zero sizes, and version placeholders are illustrative, not values for a runnable test. Implement strict versioned JSON schemas that reject unknown fields before building the CLI.
+`example.astrea-plan.json` shows inline domains; `file-domains.astrea-plan.json` shows a local domain-file reference. `example.astrea-domains.txt` contains the matching text list. `example.astrea-manifest.json` shows proposed output fields. Zero checksums and zero sizes are illustrative, not values for a runnable test. Define one JSON schema for plans and one for manifests, rejecting unknown fields. JSON schemas validate structure and types; they do not introduce version selection or support for older formats.
 
 Write to a temporary sibling folder first. Check the complete batch, then rename it to the requested output folder. Reject existing destinations, symlinked paths, and path traversal. There is no overwrite option in MVP. On failure, remove only this run's temporary files and leave no completed output folder. Write diagnostics to stderr and command results to stdout.
 
 ## Errors and completion checks
 
-Return 0 for success, 2 for invalid requests or plans, and 1 for file-access errors or failed generated-file checks. Error codes include `E_CONFIG`, `E_SELECTION`, `E_PROFILE_PAIR`, `E_COVERAGE_COUNT`, `E_LIMIT`, `E_PLAN_VERSION`, `E_OUTPUT_EXISTS`, `E_UNSAFE_PATH`, `E_IO`, `E_HASH`, and `E_ASSERTION`. JSON errors include the code, a clear message, the affected field or fixture, and relevant limits. Do not dump message bodies or arbitrary file contents into errors.
+Return 0 for success, 2 for invalid requests or plans, and 1 for file-access errors or failed generated-file checks. Error codes include `E_CONFIG`, `E_SELECTION`, `E_PROFILE_PAIR`, `E_COVERAGE_COUNT`, `E_LIMIT`, `E_OUTPUT_EXISTS`, `E_UNSAFE_PATH`, `E_IO`, `E_HASH`, and `E_ASSERTION`. JSON errors include the code, a clear message, the affected field or fixture, and relevant limits. Do not dump message bodies or arbitrary file contents into errors.
 
 MVP checks must cover repeatable output, every core case and MVP profile, exact file counts per period, dates inside each range, complete threads within periods, offline generation, multilingual text, safe attachments, normal MIME correctness, and accurate stress errors within limits. Compare fixture expectations with both direct file-byte inspection and a standard-library parser with processing limits. Never run an unlimited parser on stress files inside the CLI process.
