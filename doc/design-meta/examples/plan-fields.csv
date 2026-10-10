@@ -3,8 +3,12 @@ plan.schema,schema_version,1,Required JSON format version; reject unsupported ve
 plan.catalog,catalog_version,1,Required fixture catalog version; reject unavailable versions
 plan.generator,generator_version,current release,Required generator version; reject incompatible versions
 plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices
-plan.date,base_date,2025-01-15T12:00:00Z,Required UTC date and time; increment one minute per email file
-plan.count,count,100,Required total .eml file count including all thread members; maximum 10000
+plan.periods,periods,one January 2025 period with 100 emails,Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000
+plan.periodid,periods[].id,january-2025,Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links
+plan.periodtitle,periods[].title,January 2025,Required nonempty documentation title; does not affect email contents or dates
+plan.periodstart,periods[].start,2025-01-01,Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day
+plan.periodend,periods[].end,2025-01-31,Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start
+plan.periodcount,periods[].count,100,Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period
 plan.mode,mode,coverage,Required allocation mode; coverage includes every selected case; weighted is Phase 2
 plan.stress,include_stress,false,Required boolean; true permits explicitly selected stress cases but does not select them
 plan.packs,selection.packs,[core],Required list of named fixture groups; combine groups and remove duplicates
@@ -19,6 +23,6 @@ plan.batchbytes,limits.max_batch_bytes,268435456,Required total serialized email
 plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixtures still limited to 16; users may lower it
 plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it
 plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it
-plan.messages,messages,absent in editable templates,Optional computed file list in saved output plans; derive it from selections and validate it against them if present
+plan.messages,messages,absent in editable templates,Optional computed file list in saved output plans; every entry includes period_id and date; derive from settings and check exact counts per period
 plan.domains,domains,[example.test;newletter.test;blue.test],Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization
 plan.domainfile,domain_file,absent,Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains

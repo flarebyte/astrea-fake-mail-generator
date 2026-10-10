@@ -27,7 +27,7 @@ reports: [{
 { title: "05 Generation and test rules", notes: ["astrea.contracts"] }
 ] },
 { title: "04 Payload examples", sections: [
-{ title: "01 Generation plan example", notes: ["astrea.plan"] },
+{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan"] },
 { title: "02 File-based domain list example", notes: ["astrea.domainfile", "astrea.domainplan"] },
 { title: "03 Generated-file manifest example", notes: ["astrea.manifest"] }
 ] }
@@ -41,7 +41,7 @@ notes: [
 	markdown: """
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
-Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan includes titled ISO date periods with an exact email count for each. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
 
 A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
@@ -131,6 +131,12 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 	title: "Generation plan example",
 	filepath: "examples/example.astrea-plan.json",
 	labels: ["design", "json"]
+},
+{
+ name: "astrea.monthlyplan",
+ title: "January 30 emails and February 55 emails",
+ filepath: "examples/monthly.astrea-plan.json",
+ labels: ["design", "json"]
 },
 {
  name: "astrea.domainfile",

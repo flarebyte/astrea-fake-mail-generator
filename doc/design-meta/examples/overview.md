@@ -10,7 +10,7 @@ The MVP establishes representative multilingual test coverage with UK and US Eng
 uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 ```
 
-All generation settings come from the plan: file count, fixture selection, languages, headers, domains, seed, dates, nesting depth, stress cases, and limits. The command only selects the plan, output folder, and optional JSON error reporting. Use `astrea plan --template core` to get an editable starter plan.
+All generation settings come from the plan: titled date periods and their email counts, fixture selection, languages, headers, domains, seed, nesting depth, stress cases, and limits. The command only selects the plan, output folder, and optional JSON error reporting. Use `astrea plan --template core` to get an editable starter plan.
 
 ## Fixtures, plans, and manifests
 
@@ -31,6 +31,7 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
 - `profiles.csv`: independent client and provider header profiles and their compatibility.
 - `cli.csv`: proposed subcommands, options, defaults, and examples.
+- `monthly.astrea-plan.json`: a complete plan for January (30 emails) and February (55 emails), using ISO date ranges.
 - `example.astrea-domains.txt`: one allowed test domain per line; plans can use this file or an inline `domains` array.
 - `file-domains.astrea-plan.json`: example plan using the text-file domain source.
 - `plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.

@@ -5,7 +5,7 @@ glossary.variant,Fixture variant,A specific version of a fixture chosen by langu
 glossary.batch,Batch,All email files produced by one generate command.,100 .eml files in ./fixtures
 glossary.pack,Pack,A named group of fixture definitions.,core for normal test cases; stress for parser robustness tests
 glossary.catalog,Fixture catalog,The list of supported fixtures packs languages and header profiles with their versions.,list fixtures --json
-glossary.plan,Batch plan,The required JSON input to generate. It sets fixtures file count languages headers seed dates stress permission and limits.,batch.astrea-plan.json selects fixture IDs counts seed and languages
+glossary.plan,Batch plan,The required JSON input to generate. It sets fixtures titled date periods and counts languages headers seed stress permission and limits.,batch.astrea-plan.json specifies January 30 emails and February 55 emails
 glossary.manifest,Manifest,The output index in batch.astrea-manifest.json. It lists generated email files their source fixtures checksums and expected test results.,A file uses fixture.us.pdf and should contain one PDF attachment
 glossary.assertion,Assertion,A property that a test checks against an expected value.,Subject equals Meeting on Friday; Bcc is absent
 glossary.seed,Seed,An integer that controls generated random values. Same inputs and software versions give the same output.,seed: 42 in an .astrea-plan.json file
@@ -28,3 +28,4 @@ glossary.mutationcode,Anomaly code,An Astrea identifier for a deliberate format 
 glossary.version,Pinned software versions,Exact Python dependency template and profile versions recorded to make generation repeatable.,uv.lock plus an exact Python patch version
 glossary.mvp,MVP,The first supported release. Phase 2 Phase 3 and Later describe follow-up work.,Core multilingual fixtures and bounded stress fixtures
 glossary.domains,Domain list,Allowed fake hostnames for addresses email identifiers delivery headers and URL examples. Set domains in the plan or read a text file through domain_file.,example.test; newletter.test; blue.test
+glossary.period,Period,A named inclusive range of UTC calendar dates with an exact email file count. One plan can contain several periods.,January 2025: start 2025-01-01; end 2025-01-31; count 30

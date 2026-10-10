@@ -10,7 +10,7 @@ Python CLI that generates repeatable folders of safe .eml test files, including 
 
 Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
-Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan includes titled ISO date periods with an exact email count for each. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
 
 A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
 
@@ -30,7 +30,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | 100 .eml files in ./fixtures | glossary.batch | All email files produced by one generate command. | Batch |
 | core for normal test cases; stress for parser robustness tests | glossary.pack | A named group of fixture definitions. | Pack |
 | list fixtures --json | glossary.catalog | The list of supported fixtures packs languages and header profiles with their versions. | Fixture catalog |
-| batch.astrea-plan.json selects fixture IDs counts seed and languages | glossary.plan | The required JSON input to generate. It sets fixtures file count languages headers seed dates stress permission and limits. | Batch plan |
+| batch.astrea-plan.json specifies January 30 emails and February 55 emails | glossary.plan | The required JSON input to generate. It sets fixtures titled date periods and counts languages headers seed stress permission and limits. | Batch plan |
 | A file uses fixture.us.pdf and should contain one PDF attachment | glossary.manifest | The output index in batch.astrea-manifest.json. It lists generated email files their source fixtures checksums and expected test results. | Manifest |
 | Subject equals Meeting on Friday; Bcc is absent | glossary.assertion | A property that a test checks against an expected value. | Assertion |
 | seed: 42 in an .astrea-plan.json file | glossary.seed | An integer that controls generated random values. Same inputs and software versions give the same output. | Seed |
@@ -53,6 +53,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | uv.lock plus an exact Python patch version | glossary.version | Exact Python dependency template and profile versions recorded to make generation repeatable. | Pinned software versions |
 | Core multilingual fixtures and bounded stress fixtures | glossary.mvp | The first supported release. Phase 2 Phase 3 and Later describe follow-up work. | MVP |
 | example.test; newletter.test; blue.test | glossary.domains | Allowed fake hostnames for addresses email identifiers delivery headers and URL examples. Set domains in the plan or read a text file through domain_file. | Domain list |
+| January 2025: start 2025-01-01; end 2025-01-31; count 30 | glossary.period | A named inclusive range of UTC calendar dates with an exact email file count. One plan can contain several periods. | Period |
 
 ### 03 CLI features
 
@@ -60,11 +61,11 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | acceptance | contract | feature | id | phase | priority |
 | --- | --- | --- | --- | --- | --- |
-| The folder contains exactly one .eml file for each manifest entry | Create the requested number of .eml files in a new folder; default 100 | Generate a folder of .eml files | feature.batch | MVP | must |
+| The folder contains exactly one .eml file for each manifest entry | Create exactly the requested number of .eml files for each titled date period; combine all periods in one output folder | Generate a folder of .eml files | feature.batch | MVP | must |
 | Same inputs and software versions produce identical email files and batch.astrea-manifest.json | Use seed 0 by default; derive a separate random seed for each email and content field | Repeatable generation | feature.seed | MVP | must |
-| No generation-setting CLI overrides; replaying the saved plan produces identical files and checksums | Require an .astrea-plan.json file for generate; read fixtures counts languages profiles seed dates parameters and limits from it; save the full plan in the batch | Saved generation plan | feature.plan | MVP | must |
-| Reject counts too small to include all selected cases; report how many files each fixture produced | Generate each selected fixture variant at least once before repeating cases | Include every selected test case | feature.coverage | MVP | must |
-| Produce the requested file count; use fixture IDs to break allocation ties; reject counts that cannot fit complete groups | Phase 2: assign integer weights to fixtures and convert them to whole test-case groups; keep thread groups complete | Control fixture proportions | feature.weighted | Phase 2 | should |
+| No generation-setting CLI overrides; replaying the saved plan produces identical files and checksums | Require an .astrea-plan.json file for generate; read fixtures titled date periods languages profiles seed parameters and limits from it; save the full plan in the batch | Saved generation plan | feature.plan | MVP | must |
+| Reject periods whose counts are below the coverage minimum; report counts by period and fixture | Generate every selected case at least once in each period before repeating cases | Include every selected test case | feature.coverage | MVP | must |
+| Produce each period count exactly; use fixture IDs to break allocation ties; reject counts that cannot fit complete groups | Phase 2: assign integer weights to fixtures and convert them to whole test-case groups; keep thread groups complete | Control fixture proportions | feature.weighted | Phase 2 | should |
 | Core fixtures cover en_GB en_US fr_FR de_DE es_ES it_IT ja_JP ar_EG; check characters encoding and text direction | Start with English European Latin-script languages Japanese and Arabic RTL; add more languages in later releases | Language and writing-system coverage | feature.locale | MVP | must |
 | Each manifest entry identifies the two profiles and their versions and expected headers | Use separate named sets of client headers and provider headers; allow only supported combinations | Client and provider header examples | feature.profiles | MVP | must |
 | Check header values order repeated headers and encoding; Bcc is absent from the .eml file by default | Generate standard sender recipient date subject and MIME headers; add reply list and delivery headers when requested | Predictable email headers | feature.headers | MVP | must |
@@ -84,6 +85,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Exit 0 for success; 2 for invalid requests; 1 for file-access errors or failed output checks | Return stable error codes; optionally write error details as JSON | Useful CLI errors | feature.errors | MVP | must |
 | JSON output is repeatable for the same inputs | List available fixtures profiles languages packs and limits; show a generation plan without writing emails | List options and preview a batch | feature.inspect | MVP | must |
 | Same normalized domain list yields identical output from either source; only configured domains appear; replay needs no external file | Read domains from a plan JSON array or a local text file with one .test domain per line; assign them repeatably across email fields | Configurable test domains | feature.domains | MVP | must |
+| January 30 plus February 55 yields 85 files; each file has its period ID and a Date within the range; threads stay within one period | A plan contains multiple titled ISO date ranges with exact counts; distribute email dates repeatably within each range | Email counts by date period | feature.periods | MVP | must |
 
 ### 04 Regional coverage roadmap
 
@@ -91,8 +93,8 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 
 | assertions | content_focus | delivery_stage | id | locales | phase | region | scripts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Locale recorded; repeatable offset from fixed dates; £ encoded correctly | GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later | 1 | region.uk | en_GB | MVP | United Kingdom | Latin |
-| Do not rely on OS language settings; check body date formatting separately from the Date header | USD receipts MM/DD/YYYY prose US spelling America/New_York | 1 | region.us | en_US | MVP | United States | Latin |
+| Locale recorded; repeatable dates within each period; £ encoded correctly | GBP receipts DD/MM/YYYY prose British spelling; UTC Date headers in MVP; Europe/London DST tests later | 1 | region.uk | en_GB | MVP | United Kingdom | Latin |
+| Do not rely on OS language settings; check body date formatting separately from the Date header | USD receipts MM/DD/YYYY prose US spelling; UTC Date headers in MVP; America/New_York tests later | 1 | region.us | en_US | MVP | United States | Latin |
 | NFC accents preserved in subjects bodies display names and filenames | EUR receipts accents umlauts apostrophes and localized business prose | 1 | region.europe.latin | fr_FR;de_DE;es_ES;it_IT | MVP | Europe Latin scripts | Latin |
 | Reviewed Japanese body; encoded subject and display name preserve Japanese characters | UTF-8 Japanese notifications mixed-script display names and subjects | 1 | region.asia.japan | ja_JP | MVP | Japan | Japanese |
 | HTML dir=rtl; bidi code points recorded; RFC 2047 subject and RFC 2231 filename; output paths remain ASCII | RTL appointment reminder mixed-script text and Unicode attachment filename | 1 | region.rtl.arabic | ar_EG | MVP | Arabic-language baseline (Egypt locale) | Arabic |
@@ -208,8 +210,12 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | catalog_version | plan.catalog | Required fixture catalog version; reject unavailable versions | 1 |
 | generator_version | plan.generator | Required generator version; reject incompatible versions | current release |
 | seed | plan.seed | Required integer from 0 to 18446744073709551615; controls repeatable random choices | 0 |
-| base_date | plan.date | Required UTC date and time; increment one minute per email file | 2025-01-15T12:00:00Z |
-| count | plan.count | Required total .eml file count including all thread members; maximum 10000 | 100 |
+| periods | plan.periods | Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000 | one January 2025 period with 100 emails |
+| periods[].id | plan.periodid | Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links | january-2025 |
+| periods[].title | plan.periodtitle | Required nonempty documentation title; does not affect email contents or dates | January 2025 |
+| periods[].start | plan.periodstart | Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day | 2025-01-01 |
+| periods[].end | plan.periodend | Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start | 2025-01-31 |
+| periods[].count | plan.periodcount | Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period | 100 |
 | mode | plan.mode | Required allocation mode; coverage includes every selected case; weighted is Phase 2 | coverage |
 | include_stress | plan.stress | Required boolean; true permits explicitly selected stress cases but does not select them | false |
 | selection.packs | plan.packs | Required list of named fixture groups; combine groups and remove duplicates | [core] |
@@ -224,7 +230,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | limits.max_depth | plan.maxdepth | Required overall depth ceiling; normal fixtures still limited to 16; users may lower it | 64 |
 | limits.max_parts | plan.parts | Required total MIME part limit per email including containers; users may lower it | 1000 |
 | limits.max_header_bytes | plan.headers | Required total header byte limit per email including nested headers; users may lower it | 65536 |
-| messages | plan.messages | Optional computed file list in saved output plans; derive it from selections and validate it against them if present | absent in editable templates |
+| messages | plan.messages | Optional computed file list in saved output plans; every entry includes period_id and date; derive from settings and check exact counts per period | absent in editable templates |
 | domains | plan.domains | Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization | [example.test;newletter.test;blue.test] |
 | domain_file | plan.domainfile | Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains | absent |
 
@@ -254,6 +260,7 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 | Output scope | constraint.scope | Generate a folder of .eml files and supporting JSON only; Maildir mbox mailbox export import and delivery are out of scope | No mailbox-format output options export/import commands account access or network delivery commands |
 | Astrea JSON filenames | constraint.filenames | Plans use <name>.astrea-plan.json; manifests use <name>.astrea-manifest.json; domain lists use <name>.astrea-domains.txt; future config files retain the actual format extension | Check suffix and contents; reject invalid JSON or versions; validation requires exactly one manifest in the batch folder |
 | Domain configuration | constraint.domains | Provide exactly one of domains or domain_file; normalize lowercase and trim whitespace; reject empty lists duplicate domains invalid hostnames and names outside .test | Test inline and file sources; saved plans embed the normalized list so replay needs no external domain file |
+| Period dates and counts | constraint.periods | Periods use unique IDs nonempty titles valid inclusive YYYY-MM-DD dates and positive counts; no overlapping dates; threads stay in one period; combined count maximum 10000 | Check per-period counts and Date ranges; reject invalid calendars reversed ranges overlaps insufficient coverage and thread-only counts not divisible by three |
 
 ### 05 Generation and test rules
 
@@ -267,7 +274,58 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 
 ## 04 Payload examples
 
-### 01 Generation plan example
+### 01 Generation plan examples
+
+#### January 30 emails and February 55 emails
+
+```json
+{
+  "schema_version": 1,
+  "catalog_version": "1",
+  "generator_version": "0.1.0-example",
+  "seed": 42,
+  "mode": "coverage",
+  "include_stress": false,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 64,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "selection": {
+    "packs": [
+      "core"
+    ],
+    "fixtures": [],
+    "locales": [],
+    "client_profile": null,
+    "provider_profile": null
+  },
+  "fixture_parameters": {},
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 30
+    },
+    {
+      "id": "february-2025",
+      "title": "February 2025",
+      "start": "2025-02-01",
+      "end": "2025-02-28",
+      "count": 55
+    }
+  ]
+}
+```
 
 #### Generation plan example
 
@@ -277,9 +335,7 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
   "catalog_version": "1",
   "generator_version": "0.1.0-example",
   "seed": 42,
-  "base_date": "2025-01-15T12:00:00Z",
   "mode": "coverage",
-  "count": 1,
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,
@@ -306,6 +362,15 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
     "example.test",
     "newletter.test",
     "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 1
+    }
   ]
 }
 ```
@@ -328,9 +393,7 @@ blue.test
   "catalog_version": "1",
   "generator_version": "0.1.0-example",
   "seed": 42,
-  "base_date": "2025-01-15T12:00:00Z",
   "mode": "coverage",
-  "count": 1,
   "include_stress": false,
   "limits": {
     "max_message_bytes": 5242880,
@@ -353,7 +416,16 @@ blue.test
     "provider_profile": null
   },
   "fixture_parameters": {},
-  "domain_file": "example.astrea-domains.txt"
+  "domain_file": "example.astrea-domains.txt",
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 1
+    }
+  ]
 }
 ```
 
@@ -428,7 +500,8 @@ blue.test
             "From": "Morgan Ellis <morgan@example.test>",
             "To": "Alex Lane <alex@newletter.test>",
             "Subject": "Meeting on Friday",
-            "Message-ID": "<astrea-example-1@blue.test>"
+            "Message-ID": "<astrea-example-1@blue.test>",
+            "Date": "Thu, 16 Jan 2025 12:00:00 +0000"
           },
           "counts": {
             "Received": 2,
@@ -459,7 +532,9 @@ blue.test
         "thread": null,
         "stress": null
       },
-      "seed_key": "fixture.uk.plain/en_GB/0/0"
+      "seed_key": "january-2025/fixture.uk.plain/en_GB/0/0",
+      "period_id": "january-2025",
+      "date": "2025-01-16T12:00:00Z"
     }
   ],
   "software_versions": {
@@ -471,6 +546,15 @@ blue.test
     "example.test",
     "newletter.test",
     "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 1
+    }
   ]
 }
 ```

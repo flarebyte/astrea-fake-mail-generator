@@ -1,6 +1,6 @@
 id,delivery_stage,phase,region,locales,scripts,content_focus,assertions
-region.uk,1,MVP,United Kingdom,en_GB,Latin,GBP receipts DD/MM/YYYY prose British spelling fixed Europe/London winter offset; DST expansion later,Locale recorded; repeatable offset from fixed dates; £ encoded correctly
-region.us,1,MVP,United States,en_US,Latin,USD receipts MM/DD/YYYY prose US spelling America/New_York,Do not rely on OS language settings; check body date formatting separately from the Date header
+region.uk,1,MVP,United Kingdom,en_GB,Latin,GBP receipts DD/MM/YYYY prose British spelling; UTC Date headers in MVP; Europe/London DST tests later,Locale recorded; repeatable dates within each period; £ encoded correctly
+region.us,1,MVP,United States,en_US,Latin,USD receipts MM/DD/YYYY prose US spelling; UTC Date headers in MVP; America/New_York tests later,Do not rely on OS language settings; check body date formatting separately from the Date header
 region.europe.latin,1,MVP,Europe Latin scripts,fr_FR;de_DE;es_ES;it_IT,Latin,EUR receipts accents umlauts apostrophes and localized business prose,NFC accents preserved in subjects bodies display names and filenames
 region.asia.japan,1,MVP,Japan,ja_JP,Japanese,UTF-8 Japanese notifications mixed-script display names and subjects,Reviewed Japanese body; encoded subject and display name preserve Japanese characters
 region.rtl.arabic,1,MVP,Arabic-language baseline (Egypt locale),ar_EG,Arabic,RTL appointment reminder mixed-script text and Unicode attachment filename,HTML dir=rtl; bidi code points recorded; RFC 2047 subject and RFC 2231 filename; output paths remain ASCII
