@@ -1,5 +1,7 @@
 # Find specification records without reading the full report
 
+Use [the AI agent task map](../AGENTS.md) to choose starting files for a specific task. This guide explains the search conventions in more detail.
+
 Start with `concepts.csv`, the canonical registry of semantic groups. Each concept has an `id`, a short description, and a parent. Root concepts have an empty parent; child concepts use their immediate dotted ancestor. For example, `fixture.mime` belongs to `fixture`. Concept IDs are lowercase dot-separated words, not versions or individual fixture IDs.
 
 Use one primary `concept` per record. Reuse it across tables to connect a feature, its rules, configuration fields, and implementation tools. Choose the existing group that best describes the record; add a concept only when it enables a useful new query. Broader searches include descendants. Concepts classify specifications; they do not change fixture behavior, relationships, phases, or generation settings.
