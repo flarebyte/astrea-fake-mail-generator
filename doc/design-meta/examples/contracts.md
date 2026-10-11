@@ -229,6 +229,7 @@ This is an ordinary folder, not a mailbox format. Filenames use a six-digit inde
 
 - Relative filename, source fixture ID, period ID, and generated ISO date.
 - Language, header profiles, and normal/stress classification.
+- Source fixture `concept` and `tags`, copied from `fixtures.csv` as a JSON string and keyword array. These support retrieval and do not affect email generation or parser expectations.
 - File size and SHA-256 checksum. Sizes and checksums are computed from the serialized bytes before writing and always refer to the exact stored bytes; decoded-part checksums refer to bytes after transfer decoding, before converting them to text.
 - Expected headers, decoded text, MIME parts, attachments, and reply links. Preserve header order and repeated headers: `decoded_values` uses a string for a single occurrence and an ordered list of strings for repeated occurrences. `counts` records the expected number of each named header.
 - Deliberate format errors or stress parameters, when applicable.

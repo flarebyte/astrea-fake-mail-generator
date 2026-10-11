@@ -1,0 +1,27 @@
+id,description,parent
+fixture,Email test-case definitions and expected properties.,
+fixture.attachments,Attachments embedded images and their expected contents.,fixture
+fixture.content,Plain-text and HTML bodies and their alternatives.,fixture
+fixture.encoding,Character transfer header and filename encodings.,fixture
+fixture.headers,Standard email headers recipients and mailing-list fields.,fixture
+fixture.localization,Language writing-system and regional content coverage.,fixture
+fixture.mime,MIME part structure nesting and traversal.,fixture
+fixture.parameters,Fixture-specific settings and their allowed values.,fixture
+fixture.profiles,Synthetic client and provider header styles.,fixture
+fixture.threading,Replies references and forwarded messages.,fixture
+generation,Rules for selecting and generating email batches.,
+generation.domains,Configured test domains and domain sources.,generation
+generation.manifest,Generated-file index and expected test properties.,generation
+generation.output,Output folder layout filenames and safe file writes.,generation
+generation.periods,Titled date ranges and exact email counts.,generation
+generation.plan,Plan inputs and generation configuration.,generation
+generation.reproducibility,Seeds stable identities and repeatable file bytes.,generation
+generation.validation,Checking generated batches and reporting failures.,generation
+safety,Passive content and bounded parser stress tests.,
+safety.content,Offline passive content without executable or fetched resources.,safety
+safety.limits,Limits on file bytes headers attachments and MIME structure.,safety
+safety.stress,Explicit parser stress cases and deliberate format errors.,safety
+tooling,Tools used to build check and document the project.,
+tooling.cli,Command parsing help catalogs and diagnostics.,tooling
+tooling.development,Python packaging development dependencies and code checks.,tooling
+tooling.documentation,Source specifications and generated documentation.,tooling

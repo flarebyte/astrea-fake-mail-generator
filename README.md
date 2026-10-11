@@ -8,8 +8,7 @@ Output is an ordinary folder of `.eml` files plus `batch.astrea-plan.json` (save
 Regenerate the design documentation with:
 
 ```sh
-flyb validate --config doc/design-meta
-flyb generate markdown --config doc/design-meta
+sh scripts/generate-design.sh
 ```
 
 The proposed runtime command is `uv run --locked astrea`; implementation is not included yet.
@@ -31,3 +30,5 @@ A plan can contain titled ISO date periods with exact counts, such as January 30
 See [the Outlook example plan](doc/design-meta/examples/outlook.astrea-plan.json) for explicit client and provider profiles, using PDF invoice, forwarded-email, and Spanish confirmation fixtures.
 
 See [the nested email example plan](doc/design-meta/examples/nested.astrea-plan.json) for `fixture_parameters` that sets MIME depth to 8 for one selected fixture.
+
+For selective specification retrieval, start with [concepts.csv](doc/design-meta/examples/concepts.csv) and the [coding-agent search guide](doc/design-meta/examples/retrieval.md). Validate search metadata with `python3 scripts/validate-specs.py`; run its regression checks with `python3 -B -m unittest discover -s tests -v`.

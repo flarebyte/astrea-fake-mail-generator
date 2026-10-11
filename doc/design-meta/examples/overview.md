@@ -24,6 +24,8 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 
 ## Design inputs
 
+- `concepts.csv`: canonical registry of reusable concept IDs and their hierarchy.
+- `retrieval.md`: metadata conventions and targeted `rg`/`grep` queries for coding agents.
 - `glossary.csv`: terms used in the specs, with definitions and examples.
 - `tech.csv`: selected runtime, development, and documentation technologies with rationale and official references.
 - `features.csv`: stable feature IDs, delivery phases, contracts, and acceptance criteria.
@@ -43,7 +45,7 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
 - `example.astrea-plan.json` and `example.astrea-manifest.json`: example plan and manifest for one plain-text email. The manifest includes real sizes and checksums for the accompanying hand-authored `000001-fixture.uk.plain.eml` reference file.
 
-CSV IDs remain stable. Semicolon-separated cells are ordered lists, not additional CSV columns. Fixture rows with multiple locales expand into distinct variants. MIME shape notation describes children in file order: `mixed`, `alternative`, and `related` mean `multipart/*`; `plain`, `html`, and attachment labels mean parts with no children. These files are the source specifications; `app.cue` assembles them into `doc/design/specification.md`.
+CSV IDs remain stable. Mixed-topic tables append a `concept` column referencing `concepts.csv`; fixtures also append a quoted comma-separated `tags` cell. See [the retrieval guide](retrieval.md) for selective search commands. Semicolon-separated cells are ordered lists, not additional CSV columns. Fixture rows with multiple locales expand into distinct variants. MIME shape notation describes children in file order: `mixed`, `alternative`, and `related` mean `multipart/*`; `plain`, `html`, and attachment labels mean parts with no children. These files are the source specifications; `app.cue` assembles them into `doc/design/specification.md`.
 
 ## Safety and parser robustness
 

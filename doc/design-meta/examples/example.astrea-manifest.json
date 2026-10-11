@@ -131,7 +131,12 @@
         "thread": null,
         "stress": null
       },
-      "parameters": {}
+      "parameters": {},
+      "concept": "fixture.content",
+      "tags": [
+        "plain-text",
+        "ascii"
+      ]
     }
   ]
 }

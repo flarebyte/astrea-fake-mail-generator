@@ -11,9 +11,10 @@ reports: [{
  sections: [
 { title: "01 Product and delivery", sections: [
 { title: "01 Intent and scope", notes: ["astrea.overview"] },
-{ title: "02 Glossary", notes: ["astrea.glossary"] },
-{ title: "03 CLI features", notes: ["astrea.features"] },
-{ title: "04 Regional coverage roadmap", notes: ["astrea.regions"] }
+{ title: "02 Concept registry and selective retrieval", notes: ["astrea.concepts", "astrea.retrieval"] },
+{ title: "03 Glossary", notes: ["astrea.glossary"] },
+{ title: "04 CLI features", notes: ["astrea.features"] },
+{ title: "05 Regional coverage roadmap", notes: ["astrea.regions"] }
 ] },
 { title: "02 Fixture coverage", sections: [
 { title: "01 Fixture and use-case catalog", notes: ["astrea.fixtures"] },
@@ -51,6 +52,19 @@ The MVP establishes representative multilingual coverage with UK and US English,
 See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
 """,
 	labels: ["design", "md"]
+},
+{
+ name: "astrea.concepts",
+ title: "Canonical concept registry",
+ filepath: "examples/concepts.csv",
+ arguments: ["format-csv=table"],
+ labels: ["csv", "design"]
+},
+{
+ name: "astrea.retrieval",
+ title: "Retrieve only the relevant specification records",
+ markdown: "Use concepts.csv to identify a semantic group, then search concept fields across CSV files with rg or grep. Existing records and columns are preserved; mixed-topic tables add concepts and fixtures add optional tags. See [the retrieval conventions and search examples](../design-meta/examples/retrieval.md). Regenerate with sh scripts/generate-design.sh to validate CSVs, concept links, and manifest metadata before rendering Markdown.",
+ labels: ["design", "retrieval"]
 },
 {
  name: "astrea.glossary",

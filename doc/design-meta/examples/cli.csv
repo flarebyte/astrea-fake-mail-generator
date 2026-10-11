@@ -1,9 +1,9 @@
-id,command_or_option,phase,default,contract,example
-cli.generate,generate,MVP,plan and output folder required,Read all generation settings from the plan; only --plan --out and --json-diagnostics are accepted,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
-cli.plan,plan,MVP,core template,Print an editable plan template as JSON; --template core or stress; does not create email files,uv run --locked astrea plan --template core > custom123.astrea-plan.json
-cli.planfile,generate --plan,MVP,none,Required .astrea-plan.json input; check supported fields and settings before writing; reject generation-setting CLI overrides,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
-cli.preview,plan --plan,MVP,plan required,Read and check an existing plan; print the full file list and settings as JSON; cannot combine with --template,uv run --locked astrea plan --plan custom123.astrea-plan.json
-cli.list,list fixtures/profiles/locales/packs,MVP,text,List IDs supported combinations and minimum file counts; --json supported,uv run --locked astrea list fixtures --json
-cli.validate,validate --input,MVP,none,Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules,uv run --locked astrea validate --input ./fixtures --json-diagnostics
-cli.diagnostics,--json-diagnostics,MVP,false,Write error code message affected field and limits as JSON to stderr; keep stdout for command results,--json-diagnostics
-cli.version,--version,MVP,none,Print the installed CLI version,uv run --locked astrea --version
+id,command_or_option,phase,default,contract,example,concept
+cli.generate,generate,MVP,plan and output folder required,Read all generation settings from the plan; only --plan --out and --json-diagnostics are accepted,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures,generation.plan
+cli.plan,plan,MVP,core template,Print an editable plan template as JSON; --template core or stress; does not create email files,uv run --locked astrea plan --template core > custom123.astrea-plan.json,generation.plan
+cli.planfile,generate --plan,MVP,none,Required .astrea-plan.json input; check supported fields and settings before writing; reject generation-setting CLI overrides,uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures,generation.plan
+cli.preview,plan --plan,MVP,plan required,Read and check an existing plan; print the full file list and settings as JSON; cannot combine with --template,uv run --locked astrea plan --plan custom123.astrea-plan.json,generation.plan
+cli.list,list fixtures/profiles/locales/packs,MVP,text,List IDs supported combinations and minimum file counts; --json supported,uv run --locked astrea list fixtures --json,tooling.cli
+cli.validate,validate --input,MVP,none,Find exactly one .astrea-manifest.json file in the input folder; check its contents then check email files against it and fixture rules,uv run --locked astrea validate --input ./fixtures --json-diagnostics,generation.validation
+cli.diagnostics,--json-diagnostics,MVP,false,Write error code message affected field and limits as JSON to stderr; keep stdout for command results,--json-diagnostics,tooling.cli
+cli.version,--version,MVP,none,Print the installed CLI version,uv run --locked astrea --version,tooling.cli

@@ -1,24 +1,24 @@
-id,field,template_default,rule
-plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices
-plan.periods,periods,one January 2025 period with 100 emails,Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000
-plan.periodid,periods[].id,january-2025,Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links
-plan.periodtitle,periods[].title,January 2025,Required nonempty documentation title; does not affect email contents or dates
-plan.periodstart,periods[].start,2025-01-01,Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day
-plan.periodend,periods[].end,2025-01-31,Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start
-plan.periodcount,periods[].count,100,Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period
-plan.stress,include_stress,false,Required boolean; true permits explicitly selected stress cases but does not select them
-plan.packs,selection.packs,[core],Required list of named fixture groups; combine groups and remove duplicates
-plan.fixtures,selection.fixtures,[],Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection
-plan.locales,selection.locales,[],Required list of locale codes; empty uses all declared language variants; unknown or incompatible selections fail
-plan.client,selection.client_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
-plan.provider,selection.provider_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible
-plan.parameters,fixture_parameters,{},Required map from selected fixture IDs to supported settings in fixture-parameters.csv; reject unknown parameters and unselected fixture IDs
-plan.depth,fixture_parameters.<fixture_id>.depth,6 normal; 32 stress,Optional depth for fixture.uk.nested (2..16) or fixture.stress.depth (17..64); root depth 1; must fit limits.max_depth
-plan.messagebytes,limits.max_message_bytes,5242880,Required serialized byte limit per email; users may lower it
-plan.batchbytes,limits.max_batch_bytes,268435456,Required total serialized email byte limit; users may lower it
-plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixtures still limited to 16; users may lower it
-plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it
-plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it
-plan.messages,messages,absent in editable templates,Optional computed file list in saved plans; entries contain index period_index period_id date fixture_id locale profiles occurrence thread_member_index and resolved parameters; validate against plan settings
-plan.domains,domains,[example.test;newletter.test;blue.test],Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization
-plan.domainfile,domain_file,absent,Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains
+id,field,template_default,rule,concept
+plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices,generation.reproducibility
+plan.periods,periods,one January 2025 period with 100 emails,Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000,generation.periods
+plan.periodid,periods[].id,january-2025,Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links,generation.periods
+plan.periodtitle,periods[].title,January 2025,Required nonempty documentation title; does not affect email contents or dates,generation.periods
+plan.periodstart,periods[].start,2025-01-01,Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day,generation.periods
+plan.periodend,periods[].end,2025-01-31,Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start,generation.periods
+plan.periodcount,periods[].count,100,Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period,generation.periods
+plan.stress,include_stress,false,Required boolean; true permits explicitly selected stress cases but does not select them,safety.stress
+plan.packs,selection.packs,[core],Required list of named fixture groups; combine groups and remove duplicates,generation.plan
+plan.fixtures,selection.fixtures,[],Required list of fixture IDs; empty selects all fixtures in the chosen packs; nonempty narrows that selection,generation.plan
+plan.locales,selection.locales,[],Required list of locale codes; empty uses all declared language variants; unknown or incompatible selections fail,fixture.localization
+plan.client,selection.client_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible,fixture.profiles
+plan.provider,selection.provider_profile,null,Required field; null uses each fixture default; a profile ID overrides it only when compatible,fixture.profiles
+plan.parameters,fixture_parameters,{},Required map from selected fixture IDs to supported settings in fixture-parameters.csv; reject unknown parameters and unselected fixture IDs,fixture.parameters
+plan.depth,fixture_parameters.<fixture_id>.depth,6 normal; 32 stress,Optional depth for fixture.uk.nested (2..16) or fixture.stress.depth (17..64); root depth 1; must fit limits.max_depth,fixture.parameters
+plan.messagebytes,limits.max_message_bytes,5242880,Required serialized byte limit per email; users may lower it,safety.limits
+plan.batchbytes,limits.max_batch_bytes,268435456,Required total serialized email byte limit; users may lower it,safety.limits
+plan.maxdepth,limits.max_depth,64,Required overall depth ceiling; normal fixtures still limited to 16; users may lower it,safety.limits
+plan.parts,limits.max_parts,1000,Required total MIME part limit per email including containers; users may lower it,safety.limits
+plan.headers,limits.max_header_bytes,65536,Required total header byte limit per email including nested headers; users may lower it,safety.limits
+plan.messages,messages,absent in editable templates,Optional computed file list in saved plans; entries contain index period_index period_id date fixture_id locale profiles occurrence thread_member_index and resolved parameters; validate against plan settings,generation.plan
+plan.domains,domains,[example.test;newletter.test;blue.test],Array of allowed .test domain strings; required unless domain_file is present; preserve list order after normalization,generation.domains
+plan.domainfile,domain_file,absent,Local UTF-8 .astrea-domains.txt file with one domain per line; resolve relative to the plan file; mutually exclusive with domains,generation.domains
