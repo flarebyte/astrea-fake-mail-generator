@@ -17,39 +17,40 @@ TAG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 CSV_LINE = re.compile(r'(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*")(?:,(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*"))*')
 
 
-def read_table(path, errors):
+def read_table(path, errors, name=None):
+    name = name or path.name
     try:
         text = path.read_text(encoding="utf-8")
         with path.open(encoding="utf-8", newline="") as stream:
             rows = list(csv.reader(stream, strict=True))
     except (OSError, UnicodeError, csv.Error) as exc:
-        errors.append(f"{path.name}: cannot read valid UTF-8 CSV: {exc}")
+        errors.append(f"{name}: cannot read valid UTF-8 CSV: {exc}")
         return None
     if not rows:
-        errors.append(f"{path.name}: empty CSV")
+        errors.append(f"{name}: empty CSV")
         return None
     header = rows[0]
     if not header or len(set(header)) != len(header) or any(not key.strip() for key in header):
-        errors.append(f"{path.name}: empty or duplicate column names")
+        errors.append(f"{name}: empty or duplicate column names")
         return None
     if "id" not in header:
-        errors.append(f"{path.name}: missing id column")
+        errors.append(f"{name}: missing id column")
         return None
     if path.name in CONCEPT_TABLES and "concept" not in header:
-        errors.append(f"{path.name}: missing concept column")
+        errors.append(f"{name}: missing concept column")
     if path.name == "fixtures.csv" and "tags" not in header:
-        errors.append(f"{path.name}: missing tags column")
+        errors.append(f"{name}: missing tags column")
     for number, line in enumerate(text.splitlines(), 1):
         if not CSV_LINE.fullmatch(line):
-            errors.append(f"{path.name}:{number}: invalid CSV quoting or multiline record")
+            errors.append(f"{name}:{number}: invalid CSV quoting or multiline record")
     if len(text.splitlines()) != len(rows):
-        errors.append(f"{path.name}: each record must occupy one physical line")
+        errors.append(f"{name}: each record must occupy one physical line")
     if len(rows) == 1:
-        errors.append(f"{path.name}: no data records")
+        errors.append(f"{name}: no data records")
     records = []
     seen = set()
     for number, values in enumerate(rows[1:], 2):
-        where = f"{path.name}:{number}"
+        where = f"{name}:{number}"
         if len(values) != len(header):
             errors.append(f"{where}: expected {len(header)} columns, found {len(values)}")
             continue
@@ -84,10 +85,10 @@ def validate(examples):
     if not examples.is_dir():
         return [f"{examples}: specification directory does not exist"]
     tables = {}
-    for path in sorted(examples.glob("*.csv")):
-        table = read_table(path, errors)
+    for path in sorted(examples.rglob("*.csv")):
+        table = read_table(path, errors, path.relative_to(examples).as_posix())
         if table is not None:
-            tables[path.name] = table
+            tables[path.relative_to(examples).as_posix()] = table
     registry = tables.get("concepts.csv")
     if registry is None:
         errors.append("concepts.csv: canonical concept registry is required")
@@ -113,18 +114,19 @@ def validate(examples):
             for number, row in records:
                 if row["concept"] not in concepts:
                     errors.append(f"{name}:{number}: unknown concept {row['concept']!r}")
-    fixtures = {row["id"]: row for number, row in tables.get("fixtures.csv", ([], []))[1]}
-    for path in sorted(examples.glob("*.astrea-manifest.json")):
+    fixtures = {row["id"]: row for number, row in tables.get("tables/fixtures.csv", ([], []))[1]}
+    for path in sorted(examples.rglob("*.astrea-manifest.json")):
+        name = path.relative_to(examples).as_posix()
         try:
             manifest = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_keys)
         except (OSError, UnicodeError, ValueError) as exc:
-            errors.append(f"{path.name}: invalid JSON: {exc}")
+            errors.append(f"{name}: invalid JSON: {exc}")
             continue
         if not isinstance(manifest, dict) or not isinstance(manifest.get("messages"), list):
-            errors.append(f"{path.name}: messages must be an array")
+            errors.append(f"{name}: messages must be an array")
             continue
         for index, message in enumerate(manifest["messages"]):
-            where = f"{path.name}:messages[{index}]"
+            where = f"{name}:messages[{index}]"
             if not isinstance(message, dict):
                 errors.append(f"{where}: message must be an object")
                 continue

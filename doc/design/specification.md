@@ -597,7 +597,7 @@ blue.test
     "provider_profile": null
   },
   "fixture_parameters": {},
-  "domain_file": "example.astrea-domains.txt",
+  "domain_file": "../domains/example.astrea-domains.txt",
   "periods": [
     {
       "id": "january-2025",
@@ -761,5 +761,5 @@ blue.test
 
 #### Reference email matching the example manifest
 
-The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.
+The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/reference/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.
 

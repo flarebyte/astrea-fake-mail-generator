@@ -18,7 +18,7 @@ A **fixture** is a test-case definition, such as an invoice with one PDF attachm
 
 Example: `fixture.us.pdf` defines the case; `000001-fixture.us.pdf.eml` is one generated email; its manifest entry records the expected PDF filename, type, and checksum.
 
-See [glossary.csv](glossary.csv) for short definitions and examples of the other terms.
+See [glossary.csv](tables/glossary.csv) for short definitions and examples of the other terms.
 
 Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astrea-plan.json` and manifests end in `.astrea-manifest.json`. A custom label such as `custom123` is allowed; the final `.json` extension identifies the format.
 
@@ -26,24 +26,24 @@ Astrea JSON filenames follow `<name>.astrea-<purpose>.json`: plans end in `.astr
 
 - `concepts.csv`: canonical registry of reusable concept IDs and their hierarchy.
 - `retrieval.md`: metadata conventions and targeted `rg`/`grep` queries for coding agents.
-- `glossary.csv`: terms used in the specs, with definitions and examples.
-- `tech.csv`: selected runtime, development, and documentation technologies with rationale and official references.
-- `features.csv`: stable feature IDs, delivery phases, contracts, and acceptance criteria.
-- `fixture-parameters.csv`: supported MVP fixture settings, allowed values, and stress-variant defaults.
-- `fixtures.csv`: concrete fixture/use-case catalog, MIME shapes, locales, profile pairings, and assertions.
-- `regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
-- `profiles.csv`: independent client and provider header profiles and their compatibility.
-- `cli.csv`: proposed subcommands, options, defaults, and examples.
-- `stress.astrea-plan.json`: opt-in parser stress cases with explicit depth and sibling part-count settings.
-- `nested.astrea-plan.json`: example `fixture_parameters` setting MIME depth to 8 for the selected nested fixture.
-- `outlook.astrea-plan.json`: January and February emails with explicit Outlook desktop and Outlook provider header profiles; includes PDF invoices, forwarded messages, and Spanish travel confirmations.
-- `monthly.astrea-plan.json`: a complete plan for January (30 emails) and February (55 emails), using ISO date ranges.
-- `example.astrea-domains.txt`: one allowed test domain per line; plans can use this file or an inline `domains` array.
-- `file-domains.astrea-plan.json`: example plan using the text-file domain source.
-- `plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.
-- `constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
+- `tables/glossary.csv`: terms used in the specs, with definitions and examples.
+- `tables/tech.csv`: selected runtime, development, and documentation technologies with rationale and official references.
+- `tables/features.csv`: stable feature IDs, delivery phases, contracts, and acceptance criteria.
+- `tables/fixture-parameters.csv`: supported MVP fixture settings, allowed values, and stress-variant defaults.
+- `tables/fixtures.csv`: concrete fixture/use-case catalog, MIME shapes, locales, profile pairings, and assertions.
+- `tables/regions.csv`: delivery stages and regional language coverage. Multiple regions share the initial stage, including Japanese and Arabic coverage.
+- `tables/profiles.csv`: independent client and provider header profiles and their compatibility.
+- `tables/cli.csv`: proposed subcommands, options, defaults, and examples.
+- `plans/stress.astrea-plan.json`: opt-in parser stress cases with explicit depth and sibling part-count settings.
+- `plans/nested.astrea-plan.json`: example `fixture_parameters` setting MIME depth to 8 for the selected nested fixture.
+- `plans/outlook.astrea-plan.json`: January and February emails with explicit Outlook desktop and Outlook provider header profiles; includes PDF invoices, forwarded messages, and Spanish travel confirmations.
+- `plans/monthly.astrea-plan.json`: a complete plan for January (30 emails) and February (55 emails), using ISO date ranges.
+- `domains/example.astrea-domains.txt`: one allowed test domain per line; plans can use this file or an inline `domains` array.
+- `plans/file-domains.astrea-plan.json`: example plan using the text-file domain source.
+- `tables/plan-fields.csv`: generation settings stored in the plan, their starting values, and validation rules.
+- `tables/constraints.csv`: deterministic generation, safety, resource, and filesystem rules.
 - `contracts.md`: rules for selecting cases, writing files, recording expected results, and reporting errors.
-- `example.astrea-plan.json` and `example.astrea-manifest.json`: example plan and manifest for one plain-text email. The manifest includes real sizes and checksums for the accompanying hand-authored `000001-fixture.uk.plain.eml` reference file.
+- `plans/example.astrea-plan.json` and `reference/example.astrea-manifest.json`: example plan and manifest for one plain-text email. The manifest includes real sizes and checksums for the accompanying hand-authored `reference/000001-fixture.uk.plain.eml` reference file.
 
 CSV IDs remain stable. Mixed-topic tables append a `concept` column referencing `concepts.csv`; fixtures also append a quoted comma-separated `tags` cell. See [the retrieval guide](retrieval.md) for selective search commands. Semicolon-separated cells are ordered lists, not additional CSV columns. Fixture rows with multiple locales expand into distinct variants. MIME shape notation describes children in file order: `mixed`, `alternative`, and `related` mean `multipart/*`; `plain`, `html`, and attachment labels mean parts with no children. These files are the source specifications; `app.cue` assembles them into `doc/design/specification.md`.
 

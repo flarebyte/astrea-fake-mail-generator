@@ -22,7 +22,7 @@
     "provider_profile": null
   },
   "fixture_parameters": {},
-  "domain_file": "example.astrea-domains.txt",
+  "domain_file": "../domains/example.astrea-domains.txt",
   "periods": [
     {
       "id": "january-2025",

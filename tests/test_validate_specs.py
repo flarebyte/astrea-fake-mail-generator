@@ -24,7 +24,7 @@ class ValidateSpecsTests(unittest.TestCase):
             ["fixture", "Test cases", ""],
             ["fixture.content", "Text bodies", "fixture"],
         ])
-        self.write_csv("fixtures.csv", [
+        self.write_csv("tables/fixtures.csv", [
             ["id", "concept", "tags"],
             ["fixture.test", "fixture.content", "plain-text,ascii"],
         ])
@@ -35,11 +35,13 @@ class ValidateSpecsTests(unittest.TestCase):
         self.write_manifest()
 
     def write_csv(self, name, rows):
+        (self.examples / name).parent.mkdir(parents=True, exist_ok=True)
         with (self.examples / name).open("w", encoding="utf-8", newline="") as stream:
             csv.writer(stream, lineterminator="\n").writerows(rows)
 
     def write_manifest(self):
-        (self.examples / "example.astrea-manifest.json").write_text(
+        (self.examples / "reference").mkdir(exist_ok=True)
+        (self.examples / "reference/example.astrea-manifest.json").write_text(
             json.dumps({"messages": [self.message]}), encoding="utf-8",
         )
 
@@ -51,10 +53,10 @@ class ValidateSpecsTests(unittest.TestCase):
 
     def test_valid_quoted_tags_and_manifest(self):
         self.assertEqual(self.errors(), [])
-        self.assertIn('"plain-text,ascii"', (self.examples / "fixtures.csv").read_text())
+        self.assertIn('"plain-text,ascii"', (self.examples / "tables/fixtures.csv").read_text())
 
     def test_optional_tags_can_be_empty(self):
-        self.write_csv("fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", ""]])
+        self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", ""]])
         self.message["tags"] = []
         self.write_manifest()
         self.assertEqual(self.errors(), [])
@@ -64,7 +66,7 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("canonical concept registry is required")
 
     def test_unknown_concept(self):
-        self.write_csv("fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.unknown", ""]])
+        self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.unknown", ""]])
         self.assert_error("unknown concept")
 
     def test_duplicate_record_id(self):
@@ -97,11 +99,11 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("duplicate column names")
 
     def test_missing_columns(self):
-        (self.examples / "fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content\n")
+        (self.examples / "tables/fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content\n")
         self.assert_error("expected 3 columns, found 2")
 
     def test_unquoted_tag_list_creates_extra_column(self):
-        (self.examples / "fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content,plain-text,ascii\n")
+        (self.examples / "tables/fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content,plain-text,ascii\n")
         self.assert_error("expected 3 columns, found 4")
 
     def test_unescaped_quote_in_unquoted_field(self):
@@ -109,7 +111,7 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("invalid CSV quoting")
 
     def test_unterminated_quote(self):
-        (self.examples / "fixtures.csv").write_text('id,concept,tags\nfixture.test,fixture.content,"plain-text,ascii\n')
+        (self.examples / "tables/fixtures.csv").write_text('id,concept,tags\nfixture.test,fixture.content,"plain-text,ascii\n')
         self.assert_error("cannot read valid UTF-8 CSV")
 
     def test_multiline_record(self):
@@ -119,11 +121,11 @@ class ValidateSpecsTests(unittest.TestCase):
     def test_empty_and_duplicate_tags(self):
         for tags in ["ascii,ascii", "ascii,", "ascii, plain-text"]:
             with self.subTest(tags=tags):
-                self.write_csv("fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", tags]])
+                self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", tags]])
                 self.assert_error("tags must be unique lowercase")
 
     def test_required_concept_column(self):
-        self.write_csv("features.csv", [["id"], ["feature.one"]])
+        self.write_csv("tables/features.csv", [["id"], ["feature.one"]])
         self.assert_error("missing concept column")
 
     def test_manifest_known_but_wrong_concept(self):
@@ -147,8 +149,35 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("unknown fixture_id")
 
     def test_manifest_duplicate_json_keys(self):
-        (self.examples / "example.astrea-manifest.json").write_text('{"messages": [], "messages": []}')
+        (self.examples / "reference/example.astrea-manifest.json").write_text('{"messages": [], "messages": []}')
         self.assert_error("duplicate JSON key messages")
+
+    def test_nested_csv_is_validated(self):
+        self.write_csv("tables/nested/extra.csv", [
+            ["id", "concept"], ["row.one", "fixture.unknown"],
+        ])
+        self.assert_error("tables/nested/extra.csv:2: unknown concept")
+
+    def test_same_basename_in_different_folders_does_not_hide_records(self):
+        self.write_csv("tables/extra.csv", [
+            ["id", "concept"], ["row.one", "fixture.unknown"],
+        ])
+        self.write_csv("tables/nested/extra.csv", [
+            ["id", "concept"], ["row.two", "fixture.content"],
+        ])
+        self.assert_error("tables/extra.csv:2: unknown concept")
+
+    def test_nested_registry_cannot_replace_canonical_root_registry(self):
+        (self.examples / "concepts.csv").rename(self.examples / "tables/concepts.csv")
+        self.assert_error("canonical concept registry is required")
+
+    def test_nested_manifest_is_validated(self):
+        target = self.examples / "reference/nested/extra.astrea-manifest.json"
+        target.parent.mkdir()
+        target.write_text(json.dumps({"messages": [{
+            "fixture_id": "fixture.test", "concept": "fixture.content", "tags": [],
+        }]}))
+        self.assert_error("reference/nested/extra.astrea-manifest.json:messages[0]: tags must match fixture")
 
     def test_repository_specs(self):
         self.assertEqual(VALIDATOR.validate(SCRIPT.parents[1] / "doc/design-meta/examples"), [])

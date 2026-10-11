@@ -4,7 +4,7 @@
 
 Generate a new folder containing fake `.eml` email files for tests. Include `batch.astrea-plan.json` to repeat generation and `batch.astrea-manifest.json` to describe the files and their expected properties. Maildir, mbox, mailbox import/export, sending email, and accessing email accounts are out of scope.
 
-A **fixture** defines a test case. A **plan** says which cases to generate. A **manifest** lists the files actually generated and what tests should check. See [glossary.csv](glossary.csv) for the other terms used in these specs.
+A **fixture** defines a test case. A **plan** says which cases to generate. A **manifest** lists the files actually generated and what tests should check. See [glossary.csv](tables/glossary.csv) for the other terms used in these specs.
 
 ## Running the CLI
 
@@ -31,7 +31,7 @@ Implementation steps: check arguments, select supported fixtures, plan the files
 
 `plan --plan <file>` checks an existing plan and prints a preview with the complete computed email list. It does not generate `.eml` files and cannot be combined with `--template`. This preview uses the same planning rules as `generate`.
 
-See `plan-fields.csv` for field names, defaults provided by templates, and validation rules. Required fields must be present in an input plan; `generate` never fills them from command-line options or environment variables. Fixture-specific optional settings use the documented fixture defaults.
+See `tables/plan-fields.csv` for field names, defaults provided by templates, and validation rules. Required fields must be present in an input plan; `generate` never fills them from command-line options or environment variables. Fixture-specific optional settings use the documented fixture defaults.
 
 The plan's `periods` specifies date ranges and email counts. Its `selection` chooses packs, fixture IDs, locales, and optional profile overrides. `fixture_parameters` contains settings for individual fixtures, such as nesting depth, sibling part count, or a deliberate format-error variant. `limits` contains the processing limits. The output location stays on the CLI so the same plan can generate the same batch in different folders.
 
@@ -39,7 +39,7 @@ Editable plans omit the computed `messages` array. `generate` computes it and in
 
 ## Example with header profiles
 
-`outlook.astrea-plan.json` selects three fixtures and sets both profiles explicitly:
+`plans/outlook.astrea-plan.json` selects three fixtures and sets both profiles explicitly:
 
 ```json
 "client_profile": "client.outlook-desktop",
@@ -51,14 +51,14 @@ The client profile adds example Outlook desktop headers such as `X-Mailer`, `Thr
 The plan generates PDF invoices, forwarded emails, and Spanish travel confirmations: 30 files in January and 55 in February. All selected fixtures support this profile combination. Setting either profile to `null` uses that fixture's default for that profile.
 
 ```sh
-uv run --locked astrea generate --plan doc/design-meta/examples/outlook.astrea-plan.json --out ./outlook-fixtures
+uv run --locked astrea generate --plan doc/design-meta/examples/plans/outlook.astrea-plan.json --out ./outlook-fixtures
 ```
 
 ## Example with fixture parameters
 
 `fixture_parameters` is an object keyed by fixture ID. Each value contains settings supported by that fixture. It changes how a selected fixture generates emails; it does not select the fixture itself.
 
-`nested.astrea-plan.json` selects `fixture.uk.plain` and `fixture.uk.nested`, then customizes only the nested fixture:
+`plans/nested.astrea-plan.json` selects `fixture.uk.plain` and `fixture.uk.nested`, then customizes only the nested fixture:
 
 ```json
 "fixture_parameters": {
@@ -73,7 +73,7 @@ The plan generates 30 emails in January. Each nested email has a maximum MIME de
 `depth` is the requested structure; `limits.max_depth` is the allowed ceiling. This example sets the ceiling to 16. Reject a depth above that ceiling, a parameter unsupported by the fixture, or parameters for a fixture that was not selected. An empty `fixture_parameters` object uses fixture defaults.
 
 ```sh
-uv run --locked astrea generate --plan doc/design-meta/examples/nested.astrea-plan.json --out ./nested-fixtures
+uv run --locked astrea generate --plan doc/design-meta/examples/plans/nested.astrea-plan.json --out ./nested-fixtures
 ```
 
 ## Titled date periods
@@ -99,7 +99,7 @@ A plan can generate different email counts for several periods:
 ]
 ```
 
-This generates 85 `.eml` files in one folder: 30 dated in January and 55 dated in February. See `monthly.astrea-plan.json` for a complete example.
+This generates 85 `.eml` files in one folder: 30 dated in January and 55 dated in February. See `plans/monthly.astrea-plan.json` for a complete example.
 
 `start` and `end` are ISO 8601 calendar dates (`YYYY-MM-DD`). Both days are included. Interpret the range in UTC from the start day's midnight through the end day's 23:59:59. Equal dates allow a single-day period. Use real calendar dates, including leap-year rules. The plan has no top-level `count` or `base_date`; total count is the sum of period counts.
 
@@ -138,7 +138,7 @@ Provide exactly one of these fields in the plan:
 or:
 
 ```json
-"domain_file": "example.astrea-domains.txt"
+"domain_file": "../domains/example.astrea-domains.txt"
 ```
 
 The text file is UTF-8 with one domain per line:
@@ -185,7 +185,7 @@ Deep and wide MIME cases follow the format rules and have `validity: stress-vali
 
 For a malformed case, first build a normal email, then apply one named mutation consisting of one or more recorded byte edits. Do not parse and rewrite it afterward, since that might repair the intended error. Record the original checksum, edit offsets, removed byte counts, inserted bytes in base64, final checksum, and planned error code. Offsets are measured against the original byte buffer; edits must not overlap and are applied from highest offset to lowest. A filename traversal case changes an attachment's advertised filename only; it never changes the output file path.
 
-Supported MVP fixture settings are listed in `fixture-parameters.csv`. All other fixture-specific parameters are rejected. When a stress variant setting is omitted, include every listed variant as a separate coverage case; when set, include only that variant. `stress.astrea-plan.json` shows a complete stress-pack request. The stress pack therefore has 16 cases by default: one depth, one width, three boundary, four header, three transfer/charset, one truncation, and three filename cases. Its minimum is 16 files per period. The core pack remains 15 cases and 17 files per period.
+Supported MVP fixture settings are listed in `tables/fixture-parameters.csv`. All other fixture-specific parameters are rejected. When a stress variant setting is omitted, include every listed variant as a separate coverage case; when set, include only that variant. `plans/stress.astrea-plan.json` shows a complete stress-pack request. The stress pack therefore has 16 cases by default: one depth, one width, three boundary, four header, three transfer/charset, one truncation, and three filename cases. Its minimum is 16 files per period. The core pack remains 15 cases and 17 files per period.
 
 For `fixture.stress.truncated`, cut the final nonempty text part halfway through its encoded payload and remove all subsequent bytes, including closing boundaries. Record the cut offset. For malformed transfer/charset cases, decoded-body expectations that cannot be defined reliably are `null`; retain the original expectations under `expectations.stress.baseline_expectations` and check the final raw bytes and declared error instead. Containers also use `decoded_sha256: null` because they have no independently decoded body. Do not require malformed emails to satisfy the normal fixture's complete MIME tree or decoded-content assertions. Stress depth, width, and filename cases still have normal semantic expectations.
 
@@ -193,7 +193,7 @@ Supported error codes are `MIME_MISSING_CLOSE`, `MIME_BOUNDARY_REUSED`, `MIME_BO
 
 A parser test may accept the file, report a format error, or reject it because of a resource limit. A crash, hang, excessive memory use, unsafe attachment path, or unexpected network access is a test failure. Run parser tests separately with a timeout, memory limit, and networking disabled. Suggested starting limits are 5 seconds and 256 MiB; adjust them for the target parser/platform.
 
-Enforce the maximums in `constraints.csv` before and during writing. Count actual bytes, including base64 expansion and deliberate byte edits. Count headers inside all nested parts. Use empty text parts for large sibling-count tests. Avoid algorithms that require unlimited recursion or exponential memory. Users may lower limits but cannot raise the fixed maximums.
+Enforce the maximums in `tables/constraints.csv` before and during writing. Count actual bytes, including base64 expansion and deliberate byte edits. Count headers inside all nested parts. Use empty text parts for large sibling-count tests. Avoid algorithms that require unlimited recursion or exponential memory. Users may lower limits but cannot raise the fixed maximums.
 
 ## Configuration filenames
 
@@ -229,7 +229,7 @@ This is an ordinary folder, not a mailbox format. Filenames use a six-digit inde
 
 - Relative filename, source fixture ID, period ID, and generated ISO date.
 - Language, header profiles, and normal/stress classification.
-- Source fixture `concept` and `tags`, copied from `fixtures.csv` as a JSON string and keyword array. These support retrieval and do not affect email generation or parser expectations.
+- Source fixture `concept` and `tags`, copied from `tables/fixtures.csv` as a JSON string and keyword array. These support retrieval and do not affect email generation or parser expectations.
 - File size and SHA-256 checksum. Sizes and checksums are computed from the serialized bytes before writing and always refer to the exact stored bytes; decoded-part checksums refer to bytes after transfer decoding, before converting them to text.
 - Expected headers, decoded text, MIME parts, attachments, and reply links. Preserve header order and repeated headers: `decoded_values` uses a string for a single occurrence and an ordered list of strings for repeated occurrences. `counts` records the expected number of each named header.
 - Deliberate format errors or stress parameters, when applicable.
@@ -238,7 +238,7 @@ Batch-level fields record seed, total bytes, and file counts by fixture. A `peri
 
 For example, `fixture.us.pdf` defines an invoice case. Its manifest entry points to the generated file and says that tests should find one `application/pdf` attachment with a known filename and checksum. The fixture is the definition; the manifest describes its generated instance.
 
-`example.astrea-plan.json` shows inline domains; `file-domains.astrea-plan.json` shows a local domain-file reference. `example.astrea-domains.txt` contains the matching text list. `example.astrea-manifest.json` shows proposed output fields. The manifest describes the accompanying `000001-fixture.uk.plain.eml` file with real byte sizes and SHA-256 checksums. This is a hand-authored reference email illustrating the plan and fixture rules; it is not output from an implemented generator, and its names and Message-ID are examples rather than promised seed-derived values. A future generator should create its own internally consistent manifest. Define one JSON schema for plans and one for manifests, rejecting unknown fields. JSON schemas validate structure and types; they do not introduce version selection or support for older formats. Integer fields reject booleans, fractions, and numeric strings. Titles must be strings; selection fields must be arrays of strings, and profile overrides must be a string ID or null. Byte/part limits must be positive and cannot exceed the fixed maximums; max_depth must be between 1 and 64. Reject JSON objects with duplicate keys.
+`plans/example.astrea-plan.json` shows inline domains; `plans/file-domains.astrea-plan.json` shows a local domain-file reference. `domains/example.astrea-domains.txt` contains the matching text list. `reference/example.astrea-manifest.json` shows proposed output fields. The manifest describes the accompanying `reference/000001-fixture.uk.plain.eml` file with real byte sizes and SHA-256 checksums. This is a hand-authored reference email illustrating the plan and fixture rules; it is not output from an implemented generator, and its names and Message-ID are examples rather than promised seed-derived values. A future generator should create its own internally consistent manifest. Define one JSON schema for plans and one for manifests, rejecting unknown fields. JSON schemas validate structure and types; they do not introduce version selection or support for older formats. Integer fields reject booleans, fractions, and numeric strings. Titles must be strings; selection fields must be arrays of strings, and profile overrides must be a string ID or null. Byte/part limits must be positive and cannot exceed the fixed maximums; max_depth must be between 1 and 64. Reject JSON objects with duplicate keys.
 
 Write to a temporary sibling folder first. Check the complete batch, then rename it to the requested output folder. Refuse to replace a destination that appears during generation; the final rename must not overwrite it. Reject existing destinations, symlinked paths, and path traversal. There is no overwrite option in MVP. On failure, remove only this run's temporary files and leave no completed output folder. Write diagnostics to stderr and command results to stdout.
 

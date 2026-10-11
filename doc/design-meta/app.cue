@@ -69,70 +69,70 @@ See [intent, source conventions, and standards references](../design-meta/exampl
 {
  name: "astrea.glossary",
  title: "Glossary",
- filepath: "examples/glossary.csv",
+ filepath: "examples/tables/glossary.csv",
  arguments: ["format-csv=table"],
  labels: ["design", "csv"]
 },
 {
 	name: "astrea.tech",
 	title: "Technology choices",
-	filepath: "examples/tech.csv",
+	filepath: "examples/tables/tech.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.features",
 	title: "CLI features",
-	filepath: "examples/features.csv",
+	filepath: "examples/tables/features.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.fixtures",
 	title: "Fixture and use-case catalog",
-	filepath: "examples/fixtures.csv",
+	filepath: "examples/tables/fixtures.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
  name: "astrea.fixtureparameters",
  title: "Supported fixture parameters",
- filepath: "examples/fixture-parameters.csv",
+ filepath: "examples/tables/fixture-parameters.csv",
  arguments: ["format-csv=table"],
  labels: ["design", "csv"]
 },
 {
 	name: "astrea.regions",
 	title: "Regional coverage roadmap",
-	filepath: "examples/regions.csv",
+	filepath: "examples/tables/regions.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.profiles",
 	title: "Client and provider profiles",
-	filepath: "examples/profiles.csv",
+	filepath: "examples/tables/profiles.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
 	name: "astrea.cli",
 	title: "CLI commands",
-	filepath: "examples/cli.csv",
+	filepath: "examples/tables/cli.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
 {
  name: "astrea.planfields",
  title: "Plan settings",
- filepath: "examples/plan-fields.csv",
+ filepath: "examples/tables/plan-fields.csv",
  arguments: ["format-csv=table"],
  labels: ["design", "csv"]
 },
 {
 	name: "astrea.constraints",
 	title: "Safety and generation limits",
-	filepath: "examples/constraints.csv",
+	filepath: "examples/tables/constraints.csv",
 	arguments: ["format-csv=table"],
 	labels: ["design", "csv"]
 },
@@ -151,55 +151,55 @@ See [the complete generation rules](../design-meta/examples/contracts.md).
 {
 	name: "astrea.plan",
 	title: "Generation plan example",
-	filepath: "examples/example.astrea-plan.json",
+	filepath: "examples/plans/example.astrea-plan.json",
 	labels: ["design", "json"]
 },
 {
  name: "astrea.monthlyplan",
  title: "January 30 emails and February 55 emails",
- filepath: "examples/monthly.astrea-plan.json",
+ filepath: "examples/plans/monthly.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
  name: "astrea.outlookplan",
  title: "Plan with Outlook client and provider profiles",
- filepath: "examples/outlook.astrea-plan.json",
+ filepath: "examples/plans/outlook.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
  name: "astrea.nestedplan",
  title: "Plan with fixture-specific nesting depth",
- filepath: "examples/nested.astrea-plan.json",
+ filepath: "examples/plans/nested.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
  name: "astrea.stressplan",
  title: "Opt-in parser stress plan",
- filepath: "examples/stress.astrea-plan.json",
+ filepath: "examples/plans/stress.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
  name: "astrea.domainfile",
  title: "One domain per line",
- filepath: "examples/example.astrea-domains.txt",
+ filepath: "examples/domains/example.astrea-domains.txt",
  labels: ["design", "txt"]
 },
 {
  name: "astrea.domainplan",
  title: "Plan using a domain file",
- filepath: "examples/file-domains.astrea-plan.json",
+ filepath: "examples/plans/file-domains.astrea-plan.json",
  labels: ["design", "json"]
 },
 {
 	name: "astrea.manifest",
 	title: "Generated-file manifest example",
-	filepath: "examples/example.astrea-manifest.json",
+	filepath: "examples/reference/example.astrea-manifest.json",
 	labels: ["design", "json"]
 },
 {
  name: "astrea.referenceemail",
  title: "Reference email matching the example manifest",
- markdown: "The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.",
+ markdown: "The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/reference/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.",
  labels: ["design", "eml"]
 }
 ]
