@@ -1,19 +1,34 @@
 # astrea-fake-mail-generator
-Generate fake `.eml` email files for tests.
 
-The Python CLI is currently specified in [doc/design-meta/examples](doc/design-meta/examples/overview.md). Start with the [generated specification](doc/design/specification.md) for fixture coverage, CLI commands, expected test results, and optional parser stress cases with fixed limits.
+Astrea is a planned Python CLI for generating synthetic `.eml` files to test email
+parsing, display, indexing, attachments, and reply threads. The design covers
+multilingual content, client/provider header profiles, nested MIME, and optional
+bounded parser stress cases.
 
-Output is an ordinary folder of `.eml` files plus `batch.astrea-plan.json` (saved generation settings) and `batch.astrea-manifest.json` (file index and expected test results). Maildir, mbox, mailbox import/export, and sending email are out of scope. See the [glossary](doc/design-meta/examples/tables/glossary.csv) for definitions.
+**Current status:** the repository contains specifications, reference examples,
+a Python package skeleton, and specification validation tooling. The `astrea`
+console command and email generation are not implemented yet.
 
-Regenerate the design documentation with:
+## Try the specification tooling
+
+From the repository root, with Python 3.12 or newer installed:
 
 ```sh
-make doc-design
+python3 scripts/validate-specs.py
+python3 -m unittest discover -s tests
 ```
 
-The proposed runtime command is `uv run --locked astrea`; implementation is not included yet.
+The validator uses only the standard library. A successful run prints
+`Specification CSVs, concepts, and manifest metadata are valid.`
 
-Generation settings belong in the plan file:
+Read the [generated specification](doc/design/specification.md) for the full
+proposed interface and fixture coverage. For local development setup and the
+managed checks, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Planned usage
+
+These commands describe the proposed interface; they will work once the CLI is
+implemented:
 
 ```sh
 uv run --locked astrea plan --template core > custom123.astrea-plan.json
@@ -21,54 +36,45 @@ uv run --locked astrea plan --template core > custom123.astrea-plan.json
 uv run --locked astrea generate --plan custom123.astrea-plan.json --out ./fixtures
 ```
 
-`generate` accepts only `--plan`, `--out`, and optional `--json-diagnostics`. See [plan settings](doc/design-meta/examples/tables/plan-fields.csv).
+Output will be one ordinary folder containing `.eml` files,
+`batch.astrea-plan.json` (saved generation settings), and
+`batch.astrea-manifest.json` (file index and expected test results). Maildir,
+mbox, mailbox import/export, and sending email are outside the design's scope.
 
-Set allowed domains using either a `domains` JSON array in the plan or `domain_file` pointing to an `.astrea-domains.txt` file with one domain per line. All domains must end in `.test`. See [the example list](doc/design-meta/examples/domains/example.astrea-domains.txt) and [file-based plan](doc/design-meta/examples/plans/file-domains.astrea-plan.json).
+`generate` accepts only `--plan`, `--out`, and optional `--json-diagnostics`.
+Generation settings belong in the [plan](doc/design-meta/examples/tables/plan-fields.csv).
+Provide allowed domains through either a `domains` array or a `domain_file`
+pointing to a one-domain-per-line `.astrea-domains.txt` file. All domains must end
+in `.test`.
 
-A plan can contain titled ISO date periods with exact counts, such as January 30 emails and February 55 emails. See [the monthly example](doc/design-meta/examples/plans/monthly.astrea-plan.json). Each email's Date falls within its period; all 85 files go in the same output folder.
+Example plans illustrate common cases:
 
-See [the Outlook example plan](doc/design-meta/examples/plans/outlook.astrea-plan.json) for explicit client and provider profiles, using PDF invoice, forwarded-email, and Spanish confirmation fixtures.
+- [Monthly counts](doc/design-meta/examples/plans/monthly.astrea-plan.json):
+  30 emails in January and 55 in February, all in one output folder.
+- [Outlook profiles](doc/design-meta/examples/plans/outlook.astrea-plan.json):
+  explicit client/provider profiles with invoices, forwarded emails, and Spanish confirmations.
+- [Nested MIME](doc/design-meta/examples/plans/nested.astrea-plan.json):
+  fixture-specific MIME depth of 8.
+- [File-based domains](doc/design-meta/examples/plans/file-domains.astrea-plan.json):
+  a local allowlist instead of inline domains.
+- [Parser stress cases](doc/design-meta/examples/plans/stress.astrea-plan.json):
+  explicit opt-in with fixed resource limits.
 
-See [the nested email example plan](doc/design-meta/examples/plans/nested.astrea-plan.json) for `fixture_parameters` that sets MIME depth to 8 for one selected fixture.
+## Documentation
 
-For selective specification retrieval, start with the [AI agent task map](doc/design-meta/AGENTS.md), then use [concepts.csv](doc/design-meta/examples/concepts.csv) and the [coding-agent search guide](doc/design-meta/examples/retrieval.md). Validate search metadata with `gh flarebyte script validate-specs.py`; run its regression checks with `gh flarebyte test`.
+- [Contributing](CONTRIBUTING.md): setup, checks, and documentation maintenance.
+- [Technical design](TECHNICAL_DESIGN.md): current components and planned runtime boundaries.
+- [Design source overview](doc/design-meta/examples/overview.md) and
+  [generation contracts](doc/design-meta/examples/contracts.md).
+- [AI agent task map](doc/design-meta/AGENTS.md),
+  [concept registry](doc/design-meta/examples/concepts.csv), and
+  [targeted search guide](doc/design-meta/examples/retrieval.md).
+- [Glossary](doc/design-meta/examples/tables/glossary.csv).
 
-## Python development
+The design Markdown is generated from `doc/design-meta`; regenerate it with
+`make doc-design` after setting up the documentation tools described in the
+contributing guide.
 
-Install [uv](https://docs.astral.sh/uv/) and the `gh flarebyte` GitHub CLI
-extension. The package supports Python 3.12+; `.python-version` pins Python
-3.14.6 for local development and reproducible reference fixtures.
+## License
 
-```sh
-uv sync --locked
-gh flarebyte config validate
-gh flarebyte format
-gh flarebyte lint
-gh flarebyte test
-gh flarebyte cov
-gh flarebyte build
-```
-
-The development dependencies are locked in `uv.lock`. Tests use pytest (including
-the existing unittest suite), formatting and lint use Ruff, and coverage uses
-coverage.py with an enforced 80% minimum across the package and specification
-validator. The package skeleton lives in `src/astrea`; the `astrea` console command
-will be added with the CLI implementation.
-
-`gh flarebyte build` runs tests and writes the wheel, source distribution, and
-`checksums.txt` to `build/`. The static version in `pyproject.toml` is the release
-version source. `.gh-flarebyte.cue` manages local workflows and repository policy;
-this setup does not apply settings to GitHub or publish a release.
-
-The Makefile covers documentation generation, which combines the Python validator
-with `flyb` validation and Markdown generation. Run `make` for help,
-`make check-tools` to check the documentation tools, or `make install-tools-help`
-for installation guidance. Python scripts run through gh flarebyte directly:
-
-```sh
-gh flarebyte script validate-specs.py
-# Arguments are forwarded after --:
-gh flarebyte script validate-specs.py -- --help
-```
-
-The validator uses the standard library and does not need dependency installation.
+See [LICENSE](LICENSE) for the MIT license.
