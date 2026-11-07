@@ -1,0 +1,42 @@
+{
+  "seed": 42,
+  "include_stress": true,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 64,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "selection": {
+    "packs": [
+      "stress"
+    ],
+    "fixtures": [],
+    "locales": [],
+    "client_profile": null,
+    "provider_profile": null
+  },
+  "fixture_parameters": {
+    "fixture.stress.depth": {
+      "depth": 32
+    },
+    "fixture.stress.width": {
+      "total_parts": 128
+    }
+  },
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "parser-tests",
+      "title": "Parser robustness tests",
+      "start": "2025-03-01",
+      "end": "2025-03-07",
+      "count": 20
+    }
+  ]
+}

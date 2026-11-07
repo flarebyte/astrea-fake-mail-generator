@@ -1,0 +1,8 @@
+id,fixture_id,parameter,type,default,allowed,rule
+parameter.normal.depth,fixture.uk.nested,depth,integer,6,2..16,Requested depth including text leaves; must also fit limits.max_depth
+parameter.stress.depth,fixture.stress.depth,depth,integer,32,17..64,Requested depth including text leaves; must also fit limits.max_depth
+parameter.stress.width,fixture.stress.width,total_parts,integer,128,2..1000,Total parts including the root container; remaining parts are empty text/plain children; must fit limits.max_parts
+parameter.boundary,fixture.stress.boundary,mutation_id,string,all listed variants,MIME_MISSING_CLOSE;MIME_BOUNDARY_REUSED;MIME_BOUNDARY_MISMATCH,Omit to include all three variants; supply one code to select that variant
+parameter.headers,fixture.stress.headers,mutation_id,string,all listed variants,HEADER_DUPLICATE_CONTENT_TYPE;HEADER_BROKEN_FOLD;HEADER_LINE_TOO_LONG;HEADER_BODY_SEPARATOR_MISSING,Omit to include all four variants; supply one code to select that variant
+parameter.encoding,fixture.stress.encoding,mutation_id,string,all listed variants,TRANSFER_INVALID_BASE64;TRANSFER_TRUNCATED_QP;CHARSET_MISMATCH,Omit to include all three variants; supply one code to select that variant
+parameter.filename,fixture.stress.filename,filename_case,string,all listed variants,traversal;absolute;bidi,Omit to include all three variants; supply one case to select that variant

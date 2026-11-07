@@ -1,0 +1,44 @@
+{
+  "seed": 42,
+  "include_stress": false,
+  "limits": {
+    "max_message_bytes": 5242880,
+    "max_batch_bytes": 268435456,
+    "max_depth": 16,
+    "max_parts": 1000,
+    "max_header_bytes": 65536
+  },
+  "selection": {
+    "packs": [
+      "core"
+    ],
+    "fixtures": [
+      "fixture.uk.plain",
+      "fixture.uk.nested"
+    ],
+    "locales": [
+      "en_GB"
+    ],
+    "client_profile": null,
+    "provider_profile": null
+  },
+  "fixture_parameters": {
+    "fixture.uk.nested": {
+      "depth": 8
+    }
+  },
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "periods": [
+    {
+      "id": "january-2025",
+      "title": "January 2025",
+      "start": "2025-01-01",
+      "end": "2025-01-31",
+      "count": 30
+    }
+  ]
+}

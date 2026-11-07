@@ -1,0 +1,218 @@
+package flyb
+
+source: "astrea-design-meta"
+name: "astrea-design-meta"
+modules: ["core"]
+
+reports: [{
+ title: "Astrea fake email generator specification"
+ filepath: "../design/specification.md"
+ description: "Python CLI that generates repeatable folders of safe .eml test files, including optional parser stress cases."
+ sections: [
+{ title: "01 Product and delivery", sections: [
+{ title: "01 Intent and scope", notes: ["astrea.overview"] },
+{ title: "02 Concept registry and selective retrieval", notes: ["astrea.concepts", "astrea.retrieval"] },
+{ title: "03 Glossary", notes: ["astrea.glossary"] },
+{ title: "04 CLI features", notes: ["astrea.features"] },
+{ title: "05 Regional coverage roadmap", notes: ["astrea.regions"] }
+] },
+{ title: "02 Fixture coverage", sections: [
+{ title: "01 Fixture and use-case catalog", notes: ["astrea.fixtures"] },
+{ title: "02 Client and provider profiles", notes: ["astrea.profiles"] },
+{ title: "03 Fixture parameters", notes: ["astrea.fixtureparameters"] }
+] },
+{ title: "03 Implementation rules", sections: [
+{ title: "01 Technology choices", notes: ["astrea.tech"] },
+{ title: "02 CLI commands", notes: ["astrea.cli"] },
+{ title: "03 Plan settings", notes: ["astrea.planfields"] },
+{ title: "04 Safety and generation limits", notes: ["astrea.constraints"] },
+{ title: "05 Generation and test rules", notes: ["astrea.contracts"] }
+] },
+{ title: "04 Payload examples", sections: [
+{ title: "01 Generation plan examples", notes: ["astrea.plan", "astrea.monthlyplan", "astrea.outlookplan", "astrea.nestedplan", "astrea.stressplan"] },
+{ title: "02 File-based domain list example", notes: ["astrea.domainfile", "astrea.domainplan"] },
+{ title: "03 Generated-file manifest example", notes: ["astrea.manifest", "astrea.referenceemail"] }
+] }
+]
+}]
+
+notes: [
+{
+	name: "astrea.overview",
+	title: "Intent and scope",
+	markdown: """
+Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
+
+Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan includes titled ISO date periods with an exact email count for each. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
+
+A fixture defines a test case. `batch.astrea-plan.json` records what to generate. `batch.astrea-manifest.json` lists the generated files and their expected headers, text, parts, and attachments so tests can check them.
+
+The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
+
+See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
+""",
+	labels: ["design", "md"]
+},
+{
+ name: "astrea.concepts",
+ title: "Canonical concept registry",
+ filepath: "examples/concepts.csv",
+ arguments: ["format-csv=table"],
+ labels: ["csv", "design"]
+},
+{
+ name: "astrea.retrieval",
+ title: "Retrieve only the relevant specification records",
+ markdown: "Use concepts.csv to identify a semantic group, then search concept fields across CSV files with rg or grep. Existing records and columns are preserved; mixed-topic tables add concepts and fixtures add optional tags. See [the retrieval conventions and search examples](../design-meta/examples/retrieval.md). Regenerate with sh scripts/generate-design.sh to validate CSVs, concept links, and manifest metadata before rendering Markdown.",
+ labels: ["design", "retrieval"]
+},
+{
+ name: "astrea.glossary",
+ title: "Glossary",
+ filepath: "examples/tables/glossary.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
+},
+{
+	name: "astrea.tech",
+	title: "Technology choices",
+	filepath: "examples/tables/tech.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+	name: "astrea.features",
+	title: "CLI features",
+	filepath: "examples/tables/features.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+	name: "astrea.fixtures",
+	title: "Fixture and use-case catalog",
+	filepath: "examples/tables/fixtures.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+ name: "astrea.fixtureparameters",
+ title: "Supported fixture parameters",
+ filepath: "examples/tables/fixture-parameters.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
+},
+{
+	name: "astrea.regions",
+	title: "Regional coverage roadmap",
+	filepath: "examples/tables/regions.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+	name: "astrea.profiles",
+	title: "Client and provider profiles",
+	filepath: "examples/tables/profiles.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+	name: "astrea.cli",
+	title: "CLI commands",
+	filepath: "examples/tables/cli.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+ name: "astrea.planfields",
+ title: "Plan settings",
+ filepath: "examples/tables/plan-fields.csv",
+ arguments: ["format-csv=table"],
+ labels: ["design", "csv"]
+},
+{
+	name: "astrea.constraints",
+	title: "Safety and generation limits",
+	filepath: "examples/tables/constraints.csv",
+	arguments: ["format-csv=table"],
+	labels: ["design", "csv"]
+},
+{
+	name: "astrea.contracts",
+	title: "Generation and test rules",
+	markdown: """
+Plan the exact number of files and keep reply threads complete. Use the same seed, settings, and installed software to reproduce a batch. Plans and manifests have no version fields; only the current format is supported. Derive expected test results from the fixture definitions, then compare the generated files and parser results with those expectations.
+
+Write `.eml` files directly in one output folder with `batch.astrea-plan.json` and `batch.astrea-manifest.json`. Mark stress cases in the manifest. Content is passive, but difficult structures can still crash weak parsers. Enforce limits on files, bytes, parts, headers, attachments, and depth; complete the output folder only after all checks pass.
+
+See [the complete generation rules](../design-meta/examples/contracts.md).
+""",
+	labels: ["design", "md"]
+},
+{
+	name: "astrea.plan",
+	title: "Generation plan example",
+	filepath: "examples/plans/example.astrea-plan.json",
+	labels: ["design", "json"]
+},
+{
+ name: "astrea.monthlyplan",
+ title: "January 30 emails and February 55 emails",
+ filepath: "examples/plans/monthly.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.outlookplan",
+ title: "Plan with Outlook client and provider profiles",
+ filepath: "examples/plans/outlook.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.nestedplan",
+ title: "Plan with fixture-specific nesting depth",
+ filepath: "examples/plans/nested.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.stressplan",
+ title: "Opt-in parser stress plan",
+ filepath: "examples/plans/stress.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+ name: "astrea.domainfile",
+ title: "One domain per line",
+ filepath: "examples/domains/example.astrea-domains.txt",
+ labels: ["design", "txt"]
+},
+{
+ name: "astrea.domainplan",
+ title: "Plan using a domain file",
+ filepath: "examples/plans/file-domains.astrea-plan.json",
+ labels: ["design", "json"]
+},
+{
+	name: "astrea.manifest",
+	title: "Generated-file manifest example",
+	filepath: "examples/reference/example.astrea-manifest.json",
+	labels: ["design", "json"]
+},
+{
+ name: "astrea.referenceemail",
+ title: "Reference email matching the example manifest",
+ markdown: "The example manifest records real byte sizes and checksums for [this hand-authored reference email](../design-meta/examples/reference/000001-fixture.uk.plain.eml). It illustrates the current fixture rules; it is not generated CLI output.",
+ labels: ["design", "eml"]
+}
+]
+
+relationships: []
+
+argumentRegistry: {
+	version: "1"
+	arguments: [{
+		name: "format-csv"
+		valueType: "enum"
+		scopes: ["note"]
+		allowedValues: ["table", "raw"]
+		defaultValue: "table"
+	}]
+}
