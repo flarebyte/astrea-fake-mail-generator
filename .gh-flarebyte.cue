@@ -60,6 +60,12 @@ build: {
     checksumFile: "build/checksums.txt"
 }
 
+// The specification validator uses only the Python standard library.
+script: {
+    runtime: "python3"
+    root: "scripts"
+}
+
 devOutput: {
     color: "auto"
     style: "summary"

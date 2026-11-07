@@ -8,7 +8,7 @@ Output is an ordinary folder of `.eml` files plus `batch.astrea-plan.json` (save
 Regenerate the design documentation with:
 
 ```sh
-sh scripts/generate-design.sh
+make doc-design
 ```
 
 The proposed runtime command is `uv run --locked astrea`; implementation is not included yet.
@@ -31,7 +31,7 @@ See [the Outlook example plan](doc/design-meta/examples/plans/outlook.astrea-pla
 
 See [the nested email example plan](doc/design-meta/examples/plans/nested.astrea-plan.json) for `fixture_parameters` that sets MIME depth to 8 for one selected fixture.
 
-For selective specification retrieval, start with the [AI agent task map](doc/design-meta/AGENTS.md), then use [concepts.csv](doc/design-meta/examples/concepts.csv) and the [coding-agent search guide](doc/design-meta/examples/retrieval.md). Validate search metadata with `python3 scripts/validate-specs.py`; run its regression checks with `python3 -B -m unittest discover -s tests -v`.
+For selective specification retrieval, start with the [AI agent task map](doc/design-meta/AGENTS.md), then use [concepts.csv](doc/design-meta/examples/concepts.csv) and the [coding-agent search guide](doc/design-meta/examples/retrieval.md). Validate search metadata with `gh flarebyte script validate-specs.py`; run its regression checks with `gh flarebyte test`.
 
 ## Python development
 
@@ -59,3 +59,16 @@ will be added with the CLI implementation.
 `checksums.txt` to `build/`. The static version in `pyproject.toml` is the release
 version source. `.gh-flarebyte.cue` manages local workflows and repository policy;
 this setup does not apply settings to GitHub or publish a release.
+
+The Makefile covers documentation generation, which combines the Python validator
+with `flyb` validation and Markdown generation. Run `make` for help,
+`make check-tools` to check the documentation tools, or `make install-tools-help`
+for installation guidance. Python scripts run through gh flarebyte directly:
+
+```sh
+gh flarebyte script validate-specs.py
+# Arguments are forwarded after --:
+gh flarebyte script validate-specs.py -- --help
+```
+
+The validator uses the standard library and does not need dependency installation.
