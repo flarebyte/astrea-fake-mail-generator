@@ -1,123 +1,152 @@
 # Technical design
 
-Astrea is specified as a local fixture generator for email-processing tests.
-This document maps the current repository and summarizes the intended runtime
-boundaries. Detailed requirements live in the
-[generated specification](doc/design/specification.md) and authored
-[generation contracts](doc/design-meta/examples/contracts.md).
+Astrea is an offline Python CLI that turns a JSON plan into a flat folder of
+synthetic emails and expected test results. The
+[specification](doc/design/specification.md) and detailed
+[generation contracts](doc/design-meta/examples/contracts.md) define the target
+behavior and later phases. This document describes the implementation.
 
-## Implementation status
-
-The implemented executable tooling validates specification metadata and generates
-design documentation. `src/astrea/__init__.py` is a package skeleton with no
-runtime API. There is no `astrea` console entry point, generation pipeline, or
-runtime dependency yet. Technologies selected in the design, such as Faker,
-are not installed runtime components.
-
-## Repository map
+## Components
 
 | Path | Responsibility |
 | --- | --- |
-| `src/astrea/` | Python package scaffold; location for future runtime implementation. |
-| `scripts/validate-specs.py` | Standard-library CSV, concept registry, and manifest metadata validator. |
-| `tests/test_validate_specs.py` | Validator regression suite, including validation of repository specifications. |
-| `doc/design-meta/examples/` | Authored contracts, searchable CSV tables, plans, domain lists, and reference files. |
-| `doc/design-meta/app.cue` | flyb assembly configuration for the generated specification. |
-| `doc/design/specification.md` | Generated design reference. |
-| `scripts/generate-design.sh` | Sequential metadata validation, flyb validation, and Markdown generation. |
-| `scripts/check-doc-tools.sh` | Documentation tool availability checks. |
-| `pyproject.toml`, `uv.lock`, `.python-version` | Package metadata, dependency lock, and local Python pin. |
-| `.gh-flarebyte.cue` | Development checks, build/release configuration, and repository policy configuration. |
-| `Makefile` | Documentation commands and tool guidance. |
+| `src/astrea/cli.py`, `__main__.py` | argparse commands, version, stdout/stderr, and exit codes. |
+| `src/astrea/catalog.py`, `models.py` | Installed MVP metadata and resolved coverage cases. |
+| `src/astrea/planning.py` | Strict plan validation, normalization, selection, deterministic allocation, dates, domains, and seed derivation. |
+| `src/astrea/jsonio.py`, `errors.py` | Bounded strict JSON/file reads, canonical JSON output, and structured diagnostics. |
+| `src/astrea/rendering.py` | Localized fixture construction, header profiles, MIME serialization, expectations, and resource accounting. |
+| `src/astrea/mutations.py` | Recorded byte edits for malformed fixtures. |
+| `src/astrea/assets.py`, `data/` | Fixed passive assets, provenance inventory, templates, catalog, and strict plan/manifest JSON schemas. |
+| `src/astrea/batch.py` | Generation orchestration, manifest summaries, normal MIME inspection, and batch validation. |
+| `src/astrea/storage.py` | Confined descriptor-based access, staged writes, cleanup, and exclusive publication. |
+| `scripts/validate-specs.py`, `tests/test_validate_specs.py` | Independent standard-library checks for searchable specification metadata. |
+| `tests/test_planning.py`, `test_runtime.py`, `test_cli.py` | Runtime contracts, end-to-end checks, and adversarial inputs. |
+| `doc/design-meta/`, `doc/design/` | Authored design inputs and generated Markdown respectively. |
+| `pyproject.toml`, `uv.lock`, `.python-version` | Package metadata, exact dependency resolution, and development Python pin. |
+| `.gh-flarebyte.cue`, `Makefile` | Managed Python workflows and documentation commands respectively. |
 
-## Current validation and documentation flow
+The console entry point is `astrea.cli:main`. `python -m astrea` reaches the same
+interface. Internal Python modules are not a separate supported library API.
 
-`python3 scripts/validate-specs.py` parses `--examples-dir`, defaulting to the
-repository's `doc/design-meta/examples` independently of the working directory.
-It recursively reads CSV files in sorted order and checks UTF-8, quoting,
-column counts, single-line records, unique IDs, and tag syntax.
+## Plan to batch flow
 
-The root `concepts.csv` supplies the canonical registry. Concept IDs must use a
-hierarchical dotted form, with parents matching the immediate prefix. Tables
-with a `concept` column must reference registered concepts; selected contract
-tables require that column, and the fixture catalog also requires tags.
+```mermaid
+flowchart LR
+    CLI[CLI] --> Plan[Validate and normalize plan]
+    Catalog[Packaged catalog and schemas] --> Plan
+    Plan --> Schedule[Resolve coverage and message list]
+    Schedule --> Render[Construct MIME and fixture expectations]
+    Assets[Packaged templates and assets] --> Render
+    Render --> Mutation[Optional recorded byte mutation]
+    Mutation --> Stage[Write staged batch]
+    Stage --> Check[Validate against recomputed fixtures]
+    Check --> Publish[Exclusive directory rename]
+```
 
-The validator then reads example `*.astrea-manifest.json` files, rejects duplicate
-JSON keys, and checks each message's fixture ID, concept, and ordered tag array
-against the catalog. It returns accumulated errors from `validate(examples)`.
-The script prints errors and exits 1 on failure; it prints a success message and
-exits 0 otherwise. This checks specification metadata, not complete runtime plan
-schemas or the reference email's bytes and checksums.
+Plan templates supply explicit starting values. Input plans must supply required
+fields and exactly one domain source. JSON schemas reject unknown fields and
+incorrect types, including boolean or floating-point integer fields. Semantic
+checks enforce real calendar dates, chronological nonoverlapping periods, valid
+`.test` domains, supported selections/profile pairs, fixture parameters, and caps.
+Duplicate JSON keys are rejected before schema validation.
 
-`make doc-design` calls `scripts/generate-design.sh`, which stops on the first
-failed command: the metadata validator through `gh flarebyte`, `flyb validate`,
-then `flyb generate markdown`. flyb assembles the authored inputs according to
-`app.cue` into `doc/design/specification.md`. It is a documentation tool, not a
-runtime dependency.
+A relative domain-file path is resolved from the input plan's directory. The file
+is read once, bounded to 64 KiB, and normalized into an ordered domain list. The
+saved plan embeds that list; batch validation never follows external domain files.
 
-## Planned runtime flow
+The planner sorts resolved cases, allocates every case once per period, then
+repeats complete groups without cutting threads. It computes inclusive UTC dates
+using the specification's integer interpolation rule. Preview and generation use
+the same planner. Saved message lists are checked against a fresh computation.
 
-The following stages are specified but not implemented:
+## Reproducible rendering
 
-1. Parse commands with `argparse`; load and validate the JSON plan, optional
-   domain file, fixture selections, profile combinations, and resource limits.
-2. Compute the complete message list, exact period counts, and complete threads.
-   Both plan preview and generation use the same planning rules.
-3. Build normal MIME messages with Python's `email` package, curated localized
-   templates, seeded synthetic data, and packaged passive attachments.
-4. Serialize with controlled byte settings; apply deliberate byte-level format
-   errors only for explicitly selected stress cases.
-5. Check generated bytes against independently derived fixture expectations,
-   write the saved plan and manifest, and complete the batch only after all checks pass.
+SHA-256 of consistently formatted identity data derives separate field seeds.
+Identity includes the batch seed, period ID, fixture ID, locale, occurrence,
+thread member, and field name. It excludes period titles and global file indices.
+Domain assignments use the period-local message index and fixed role offsets.
+Thread participant domains use the thread's first index.
 
-The planned commands are fixture listing, plan template/preview, generation, and
-batch validation. See the [CLI table](doc/design-meta/examples/tables/cli.csv)
-for their contracts. No internal runtime module layout has been established yet.
+Curated project-authored templates provide body prose; an independently seeded
+Faker instance supplies each recipient name. Effective Faker name-provider locales
+are recorded, including Arabic's current English-name fallback. Body templates do
+not fall back to another language. Language review of the authored prose remains
+a release-quality task.
 
-## Planned contracts and boundaries
+Python's `email` package builds messages with an explicit SMTP policy, CRLF,
+controlled wrapping, UTF-8 bodies, encoded Unicode headers/filenames, and explicit
+deterministic MIME boundaries. Assets are fixed packaged bytes. Expectations are
+built from the fixture's constructed message and content before output parsing;
+the parser's output does not define them. Normal output is then inspected with a
+separate standard-library parse, comparing headers, MIME properties, decoded
+hashes, and body facts.
 
-A fixture defines a case, a plan selects cases and settings, and a manifest
-indexes actual files and expected properties. `generate` takes only the plan
-path, output path, and optional JSON diagnostic flag. Plans contain all generation
-settings, including periods, seed, locales, profiles, fixture parameters, and
-limits. Saved plans embed normalized `.test` domains so replay does not depend on
-the original domain file. Only the current JSON format is supported.
+Repeatability applies to the same installed Python, dependencies, templates,
+assets, catalog, and generator. No output contains current timestamps, host paths,
+or usernames. Cross-version byte compatibility is not promised.
 
-Reproducibility requires the same Python and dependency versions, generator,
-templates, fixtures, and settings. Seeds alone are insufficient: dates, IDs,
-MIME boundaries, encodings, header order, line endings, and attachment bytes also
-need fixed rules. Expected semantic properties come from fixture definitions,
-not from the parser under test; checksums and sizes come from serialized bytes.
+## Stress and resource boundaries
 
-Generation must work offline with synthetic identities and packaged inert assets.
-Normal and stress fixtures have separate validity expectations. Stress cases
-require explicit selection plus `include_stress: true`, retain hard resource
-caps, and are marked in the manifest. Downstream parser stress tests run separately
-with bounded resources. See the
-[constraints table](doc/design-meta/examples/tables/constraints.csv) for exact limits.
+Core and stress cases are distinct catalog entries. Stress selection requires
+explicit permission in the plan. Deep/wide and advertised filename cases remain
+`stress-valid`; deliberately broken cases are `malformed`.
 
-Output is a flat folder of `.eml` files plus `batch.astrea-plan.json` and
-`batch.astrea-manifest.json`. The design requires writing into a temporary sibling
-folder, checking the batch, and completing it without overwriting a destination.
-Existing destinations, symlinked paths, and path traversal are rejected; cleanup
-removes only files created by that run. Mailbox formats, account access, and email
-delivery are outside scope.
+Malformed output starts as valid MIME. The mutation layer records nonoverlapping
+edits against original offsets and applies them in descending order, preserving
+original/final hashes and baseline expectations. Unreliable decoded hashes are
+null for encoding/truncation cases. No mutated message is parsed and rewritten.
+The CLI never invokes a parser on stress output.
 
-## Extending and testing
+Planning bounds file counts and structural settings. Rendering enforces actual
+serialized bytes, header bytes, part counts, depth, attachment counts, and decoded
+attachment sizes. Batch byte limits are checked while writing. JSON input reads
+are bounded to 64 MiB; domain sources have their smaller dedicated cap. Validation
+first compares actual message bytes with bounded deterministic fixture output,
+then parses only exact normal bytes. This keeps untrusted or stress bytes away
+from the in-process parser.
 
-For specification changes, begin with the
-[agent task map](doc/design-meta/AGENTS.md) and
-[retrieval guide](doc/design-meta/examples/retrieval.md), then update the relevant
-catalog rows, contracts, and examples. Keep canonical concepts and fixture metadata
-consistent before regenerating the specification.
+## Filesystem completion and validation
 
-For validator changes, extend `scripts/validate-specs.py` and its regression suite.
-The suite uses temporary directories to exercise malformed CSV, hierarchy errors,
-manifest mismatches, duplicate JSON keys, and nested paths without changing the
-repository's examples.
+Output parents must exist. Directory traversal opens each component with
+`O_NOFOLLOW` and holds directory descriptors. Files use exclusive creation and
+are flushed before completion. All output starts in a private sibling staging
+directory, which is validated before publication.
 
-Future runtime work belongs in `src/astrea/` with tests in `tests/`. The design
-calls for CLI error checks, deterministic reference comparisons, independent MIME
-and manifest checks, and content/resource/path safety tests; these runtime checks
-are not implemented yet. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and
-validation commands.
+Publication uses `renameatx_np(RENAME_EXCL)` on macOS or
+`renameat2(RENAME_NOREPLACE)` on Linux. It refuses a destination created during
+generation rather than relying on an existence check. Other platforms fail
+without publishing. The Linux path requires validation on a Linux host. Cleanup
+checks the staging directory's identity and removes only that run's staging tree.
+
+Batch validation requires one manifest and `batch.astrea-plan.json`. It rejects
+symlinks, nonregular entries, unsafe filenames, and missing/extra emails. Reads
+stay confined to the opened input directory. It recomputes the plan, message
+bytes, expectations, coverage, and asset inventory and compares the supplied
+manifest to those results; changing a manifest cannot authorize different paths
+or remove required assertions. Validation checks consistency, not authenticity:
+a coherently replaced plan and batch constitute another valid batch.
+
+## Diagnostics and tests
+
+Commands return 0 on success, 2 for invalid invocation/plans, and 1 for file-access
+or validation failures. Diagnostics carry stable codes and optional field/limit
+context. JSON diagnostics use stderr; results use stdout. Input contents and email
+bodies are not included in errors.
+
+Tests cover specification/catalog parity, strict configuration, coverage and thread
+allocation, all supplied plans and profile combinations, multilingual MIME,
+replay, cross-process determinism, offline generation, mutation records, limits,
+tampering, unsafe paths, cleanup, and publication races. Downstream stress parsing
+runs in a separate process with time and memory limits. macOS tests monitor RSS
+externally; Linux tests set an address-space limit. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for commands.
+
+## Specification documentation workflow
+
+`make doc-design` runs `scripts/generate-design.sh`: metadata validation through
+`gh flarebyte`, `flyb validate`, then `flyb generate markdown`. `app.cue` assembles
+authored tables, prose, and examples into `doc/design/specification.md`. The
+standard-library metadata validator checks CSV structure, canonical concepts,
+and manifest fixture tags; it does not validate runtime schemas or email bytes.
+The runtime uses packaged data independently of the checkout; tests keep its
+catalog aligned with the specification tables.

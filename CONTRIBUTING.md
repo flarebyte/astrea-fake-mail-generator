@@ -1,8 +1,8 @@
 # Contributing
 
-The email-generation CLI is not implemented yet. Current changes primarily
-concern specifications, examples, validation tooling, and the Python package
-scaffold. See [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) for the component map.
+The runtime CLI lives in `src/astrea/`, with specifications and examples under
+`doc/design-meta/`. See [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md) for the component
+map and [README.md](README.md) for generation and validation examples.
 
 ## Setup
 
@@ -15,7 +15,7 @@ uv sync --locked
 gh flarebyte config validate
 ```
 
-The package requires Python 3.12+. `.python-version` pins Python 3.14.6 for local
+Use macOS or Linux for runtime filesystem checks. The package requires Python 3.12+. `.python-version` pins Python 3.14.6 for local
 development and reproducible reference fixtures. `uv.lock` locks dependencies;
 `pyproject.toml` declares the package, build backend, and development tools.
 
@@ -46,11 +46,12 @@ For a focused check of the existing validator suite:
 uv run --locked pytest tests/test_validate_specs.py
 ```
 
-The validator and its regression suite also run without third-party dependencies:
+The specification validator and its original regression suite also run without
+third-party dependencies:
 
 ```sh
 python3 scripts/validate-specs.py
-python3 -m unittest discover -s tests
+python3 -m unittest discover -s tests -p test_validate_specs.py
 ```
 
 Arguments to the managed script runner go after `--`:
@@ -91,6 +92,28 @@ This validates specification metadata, runs `flyb validate`, then regenerates th
 Markdown with `flyb generate markdown`. Review the generated diff alongside the
 source changes. The reference `.eml` is hand-authored; if its bytes change, update
 the corresponding manifest sizes and checksums.
+
+## Runtime regression checks
+
+```sh
+uv run --locked pytest tests/test_planning.py
+uv run --locked pytest tests/test_runtime.py tests/test_cli.py
+```
+
+The runtime tests exercise all supplied plans, saved-plan replay, cross-process
+repeatability, profiles, multilingual MIME, exact coverage, tampered batches,
+resource limits, unsafe paths, and destination races. Network access is blocked
+in the offline-generation test. Stress parsing runs in a separate process with a
+five-second timeout and 256 MiB memory budget; macOS uses external RSS monitoring
+because its `RLIMIT_AS` setting is unavailable. The macOS test needs permission to
+run `ps` when executed in a restricted sandbox.
+
+The packaged `src/astrea/data/catalog.json` contains MVP metadata copied from the
+specification tables. Update it together with the source tables when changing
+supported fixtures, profiles, regions, or parameters; a regression check enforces
+consistency. Runtime schemas, localized templates, and passive assets are also
+packaged under `src/astrea/data/`. Keep asset provenance and safety inventory in
+sync with attachment changes. Localized templates still need human language review.
 
 ## Preparing a change
 

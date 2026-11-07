@@ -1,0 +1,146 @@
+{
+  "assets": [],
+  "count": 1,
+  "coverage": {
+    "fixture_counts": {
+      "fixture.uk.plain": 1
+    }
+  },
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "messages": [
+    {
+      "concept": "fixture.content",
+      "date": "2025-01-16T12:00:00Z",
+      "effective_faker_locales": {
+        "recipient_name": "en_GB"
+      },
+      "expectations": {
+        "attachments": [],
+        "bcc_recipients": [],
+        "body_facts": [
+          "Friday",
+          "10:00"
+        ],
+        "headers": {
+          "absent": [
+            "Bcc",
+            "X-Mailer"
+          ],
+          "counts": {
+            "Content-Language": 1,
+            "Content-Transfer-Encoding": 1,
+            "Content-Type": 1,
+            "Date": 1,
+            "From": 1,
+            "MIME-Version": 1,
+            "Message-ID": 1,
+            "Received": 2,
+            "Return-Path": 1,
+            "Subject": 1,
+            "To": 1,
+            "User-Agent": 1
+          },
+          "decoded_values": {
+            "Content-Language": "en-GB",
+            "Content-Transfer-Encoding": "7bit",
+            "Content-Type": "text/plain; charset=\"utf-8\"",
+            "Date": "Thu, 16 Jan 2025 12:00:00 +0000",
+            "From": "Morgan Ellis <morgan@example.test>",
+            "MIME-Version": "1.0",
+            "Message-ID": "<astrea-70a75e0a959184e24a1ad27feda53c7c9510fe0ec579db13c21d24ad7a804dbd@blue.test>",
+            "Received": [
+              "from newletter.test ([192.0.2.10]) by blue.test; Thu, 16 Jan 2025 12:00:00 +0000",
+              "from blue.test ([192.0.2.11]) by example.test; Thu, 16 Jan 2025 12:00:00 +0000"
+            ],
+            "Return-Path": "<morgan@example.test>",
+            "Subject": "Meeting on Friday",
+            "To": "Eric Humphreys <alex@newletter.test>",
+            "User-Agent": "Astrea Thunderbird-style test fixture"
+          },
+          "ordered_names": [
+            "Return-Path",
+            "Received",
+            "Received",
+            "From",
+            "To",
+            "Date",
+            "Message-ID",
+            "Subject",
+            "User-Agent",
+            "Content-Language",
+            "Content-Type",
+            "Content-Transfer-Encoding",
+            "MIME-Version"
+          ]
+        },
+        "mime": {
+          "depth": 1,
+          "node_count": 1,
+          "nodes": [
+            {
+              "charset": "utf-8",
+              "content_id": null,
+              "decoded_sha256": "bc7360249a62999938584d0bbf7ccc556d1220ffe142c2a7a7917c849da7e45a",
+              "depth": 1,
+              "disposition": null,
+              "media_type": "text/plain",
+              "path": "1",
+              "transfer_encoding": "7bit"
+            }
+          ]
+        },
+        "stress": null,
+        "thread": null,
+        "unicode_codepoints": []
+      },
+      "fixture_id": "fixture.uk.plain",
+      "index": 1,
+      "locale": "en_GB",
+      "occurrence": 0,
+      "parameters": {},
+      "path": "000001-fixture.uk.plain.eml",
+      "period_id": "january-2025",
+      "period_index": 0,
+      "profiles": {
+        "client": {
+          "id": "client.thunderbird"
+        },
+        "provider": {
+          "id": "provider.generic"
+        }
+      },
+      "region": "region.uk",
+      "script": "Latin",
+      "seed_key": "january-2025/fixture.uk.plain/en_GB/0/0",
+      "sha256": "1fad6b1d11f46dcdf6a8fb5edac9f2307efbdbe49db19c20a65ecba3b5fd8f33",
+      "size_bytes": 726,
+      "tags": [
+        "plain-text",
+        "ascii"
+      ],
+      "thread_member_index": 0,
+      "validity": "valid"
+    }
+  ],
+  "periods": [
+    {
+      "count": 1,
+      "coverage": {
+        "fixture_counts": {
+          "fixture.uk.plain": 1
+        },
+        "minimum_messages": 1
+      },
+      "end": "2025-01-31",
+      "id": "january-2025",
+      "start": "2025-01-01",
+      "title": "January 2025"
+    }
+  ],
+  "seed": 0,
+  "total_message_bytes": 726
+}

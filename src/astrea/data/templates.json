@@ -1,0 +1,10 @@
+{
+  "en_GB": {"subject": "Meeting on Friday", "body": "Hello {name},\nOur meeting is on Friday at 10:00. Please confirm.\nMorgan", "facts": ["Friday", "10:00"]},
+  "en_US": {"subject": "Order confirmation", "body": "Hello {name},\nYour order is confirmed. The total is USD 24.00. Thank you.", "facts": ["USD 24.00"]},
+  "fr_FR": {"subject": "Nouvelles de notre équipe", "body": "Bonjour {name},\nVoici les nouvelles de notre équipe. La réunion est prévue vendredi à 10 h. Merci !", "facts": ["équipe", "vendredi"]},
+  "de_DE": {"subject": "Projektbericht für März", "body": "Guten Tag {name},\nDer Projektbericht für März ist fertig. Vielen Dank für Ihre Unterstützung.", "facts": ["März", "Unterstützung"]},
+  "es_ES": {"subject": "Confirmación de su viaje", "body": "Hola {name},\nSu viaje está confirmado. La salida es el sábado a las 10:00. ¡Gracias!", "facts": ["sábado", "10:00"]},
+  "it_IT": {"subject": "Notizie della comunità", "body": "Buongiorno {name},\nLa riunione della comunità è prevista per venerdì alle 10:00. Grazie!", "facts": ["comunità", "venerdì"]},
+  "ja_JP": {"subject": "サービスのお知らせ", "body": "{name} 様\nサービスの予約を受け付けました。金曜日の午前10時にお待ちしています。ありがとうございます。", "facts": ["予約", "金曜日"]},
+  "ar_EG": {"subject": "تذكير بالموعد", "body": "مرحباً {name}،\nنذكرك بموعدك يوم الجمعة الساعة 10:00. شكراً لك.", "facts": ["الجمعة", "10:00"]}
+}
