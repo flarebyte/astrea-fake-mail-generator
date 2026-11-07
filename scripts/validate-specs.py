@@ -7,14 +7,19 @@ import json
 import re
 from pathlib import Path
 
-
 CONCEPT_TABLES = {
-    "cli.csv", "constraints.csv", "features.csv", "fixtures.csv",
-    "plan-fields.csv", "tech.csv",
+    "cli.csv",
+    "constraints.csv",
+    "features.csv",
+    "fixtures.csv",
+    "plan-fields.csv",
+    "tech.csv",
 }
 CONCEPT_ID = re.compile(r"[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*")
 TAG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
-CSV_LINE = re.compile(r'(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*")(?:,(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*"))*')
+CSV_LINE = re.compile(
+    r'(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*")(?:,(?:[^,"\r\n]*|"(?:[^"\r\n]|"")*"))*'
+)
 
 
 def read_table(path, errors, name=None):
@@ -30,7 +35,11 @@ def read_table(path, errors, name=None):
         errors.append(f"{name}: empty CSV")
         return None
     header = rows[0]
-    if not header or len(set(header)) != len(header) or any(not key.strip() for key in header):
+    if (
+        not header
+        or len(set(header)) != len(header)
+        or any(not key.strip() for key in header)
+    ):
         errors.append(f"{name}: empty or duplicate column names")
         return None
     if "id" not in header:
@@ -52,21 +61,29 @@ def read_table(path, errors, name=None):
     for number, values in enumerate(rows[1:], 2):
         where = f"{name}:{number}"
         if len(values) != len(header):
-            errors.append(f"{where}: expected {len(header)} columns, found {len(values)}")
+            errors.append(
+                f"{where}: expected {len(header)} columns, found {len(values)}"
+            )
             continue
         if any("\n" in value or "\r" in value for value in values):
             errors.append(f"{where}: multiline cell is not searchable as one record")
         row = dict(zip(header, values))
         identity = row["id"]
         if not identity or identity != identity.strip():
-            errors.append(f"{where}: id must be nonempty without surrounding whitespace")
+            errors.append(
+                f"{where}: id must be nonempty without surrounding whitespace"
+            )
         elif identity in seen:
             errors.append(f"{where}: duplicate id {identity}")
         seen.add(identity)
         if "tags" in row:
             tags = row["tags"].split(",") if row["tags"] else []
-            if len(tags) != len(set(tags)) or any(not TAG.fullmatch(tag) for tag in tags):
-                errors.append(f"{where}: tags must be unique lowercase comma-separated keywords")
+            if len(tags) != len(set(tags)) or any(
+                not TAG.fullmatch(tag) for tag in tags
+            ):
+                errors.append(
+                    f"{where}: tags must be unique lowercase comma-separated keywords"
+                )
         records.append((number, row))
     return header, records
 
@@ -113,16 +130,24 @@ def validate(examples):
         if "concept" in header:
             for number, row in records:
                 if row["concept"] not in concepts:
-                    errors.append(f"{name}:{number}: unknown concept {row['concept']!r}")
-    fixtures = {row["id"]: row for number, row in tables.get("tables/fixtures.csv", ([], []))[1]}
+                    errors.append(
+                        f"{name}:{number}: unknown concept {row['concept']!r}"
+                    )
+    fixtures = {
+        row["id"]: row for number, row in tables.get("tables/fixtures.csv", ([], []))[1]
+    }
     for path in sorted(examples.rglob("*.astrea-manifest.json")):
         name = path.relative_to(examples).as_posix()
         try:
-            manifest = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_keys)
+            manifest = json.loads(
+                path.read_text(encoding="utf-8"), object_pairs_hook=unique_json_keys
+            )
         except (OSError, UnicodeError, ValueError) as exc:
             errors.append(f"{name}: invalid JSON: {exc}")
             continue
-        if not isinstance(manifest, dict) or not isinstance(manifest.get("messages"), list):
+        if not isinstance(manifest, dict) or not isinstance(
+            manifest.get("messages"), list
+        ):
             errors.append(f"{name}: messages must be an array")
             continue
         for index, message in enumerate(manifest["messages"]):
@@ -139,16 +164,21 @@ def validate(examples):
             fixture = fixtures[fixture_id]
             if concept != fixture.get("concept"):
                 errors.append(f"{where}: concept must match fixture {fixture_id}")
-            expected_tags = fixture.get("tags", "").split(",") if fixture.get("tags") else []
+            expected_tags = (
+                fixture.get("tags", "").split(",") if fixture.get("tags") else []
+            )
             if message.get("tags") != expected_tags:
-                errors.append(f"{where}: tags must match fixture {fixture_id} as a JSON array")
+                errors.append(
+                    f"{where}: tags must match fixture {fixture_id} as a JSON array"
+                )
     return errors
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--examples-dir", type=Path,
+        "--examples-dir",
+        type=Path,
         default=Path(__file__).resolve().parents[1] / "doc/design-meta/examples",
     )
     args = parser.parse_args()

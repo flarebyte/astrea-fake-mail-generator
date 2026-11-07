@@ -7,7 +7,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/validate-specs.py"
 SPEC = importlib.util.spec_from_file_location("validate_specs", SCRIPT)
 VALIDATOR = importlib.util.module_from_spec(SPEC)
@@ -19,17 +18,24 @@ class ValidateSpecsTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.examples = Path(self.temporary.name)
-        self.write_csv("concepts.csv", [
-            ["id", "description", "parent"],
-            ["fixture", "Test cases", ""],
-            ["fixture.content", "Text bodies", "fixture"],
-        ])
-        self.write_csv("tables/fixtures.csv", [
-            ["id", "concept", "tags"],
-            ["fixture.test", "fixture.content", "plain-text,ascii"],
-        ])
+        self.write_csv(
+            "concepts.csv",
+            [
+                ["id", "description", "parent"],
+                ["fixture", "Test cases", ""],
+                ["fixture.content", "Text bodies", "fixture"],
+            ],
+        )
+        self.write_csv(
+            "tables/fixtures.csv",
+            [
+                ["id", "concept", "tags"],
+                ["fixture.test", "fixture.content", "plain-text,ascii"],
+            ],
+        )
         self.message = {
-            "fixture_id": "fixture.test", "concept": "fixture.content",
+            "fixture_id": "fixture.test",
+            "concept": "fixture.content",
             "tags": ["plain-text", "ascii"],
         }
         self.write_manifest()
@@ -42,21 +48,29 @@ class ValidateSpecsTests(unittest.TestCase):
     def write_manifest(self):
         (self.examples / "reference").mkdir(exist_ok=True)
         (self.examples / "reference/example.astrea-manifest.json").write_text(
-            json.dumps({"messages": [self.message]}), encoding="utf-8",
+            json.dumps({"messages": [self.message]}),
+            encoding="utf-8",
         )
 
     def errors(self):
         return VALIDATOR.validate(self.examples)
 
     def assert_error(self, substring):
-        self.assertTrue(any(substring in error for error in self.errors()), self.errors())
+        self.assertTrue(
+            any(substring in error for error in self.errors()), self.errors()
+        )
 
     def test_valid_quoted_tags_and_manifest(self):
         self.assertEqual(self.errors(), [])
-        self.assertIn('"plain-text,ascii"', (self.examples / "tables/fixtures.csv").read_text())
+        self.assertIn(
+            '"plain-text,ascii"', (self.examples / "tables/fixtures.csv").read_text()
+        )
 
     def test_optional_tags_can_be_empty(self):
-        self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", ""]])
+        self.write_csv(
+            "tables/fixtures.csv",
+            [["id", "concept", "tags"], ["fixture.test", "fixture.content", ""]],
+        )
         self.message["tags"] = []
         self.write_manifest()
         self.assertEqual(self.errors(), [])
@@ -66,7 +80,10 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("canonical concept registry is required")
 
     def test_unknown_concept(self):
-        self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.unknown", ""]])
+        self.write_csv(
+            "tables/fixtures.csv",
+            [["id", "concept", "tags"], ["fixture.test", "fixture.unknown", ""]],
+        )
         self.assert_error("unknown concept")
 
     def test_duplicate_record_id(self):
@@ -79,19 +96,28 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("duplicate id fixture.content")
 
     def test_unknown_parent(self):
-        self.write_csv("concepts.csv", [["id", "description", "parent"], ["fixture.content", "Bodies", "fixture"]])
+        self.write_csv(
+            "concepts.csv",
+            [["id", "description", "parent"], ["fixture.content", "Bodies", "fixture"]],
+        )
         self.assert_error("unknown parent fixture")
 
     def test_cyclic_or_nonhierarchical_parents(self):
-        self.write_csv("concepts.csv", [
-            ["id", "description", "parent"],
-            ["fixture", "Cases", "fixture.content"],
-            ["fixture.content", "Bodies", "fixture"],
-        ])
+        self.write_csv(
+            "concepts.csv",
+            [
+                ["id", "description", "parent"],
+                ["fixture", "Cases", "fixture.content"],
+                ["fixture.content", "Bodies", "fixture"],
+            ],
+        )
         self.assert_error("parent must be")
 
     def test_invalid_concept_id(self):
-        self.write_csv("concepts.csv", [["id", "description", "parent"], ["Fixture-Content", "Bodies", ""]])
+        self.write_csv(
+            "concepts.csv",
+            [["id", "description", "parent"], ["Fixture-Content", "Bodies", ""]],
+        )
         self.assert_error("invalid hierarchical concept id")
 
     def test_duplicate_columns(self):
@@ -99,11 +125,15 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("duplicate column names")
 
     def test_missing_columns(self):
-        (self.examples / "tables/fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content\n")
+        (self.examples / "tables/fixtures.csv").write_text(
+            "id,concept,tags\nfixture.test,fixture.content\n"
+        )
         self.assert_error("expected 3 columns, found 2")
 
     def test_unquoted_tag_list_creates_extra_column(self):
-        (self.examples / "tables/fixtures.csv").write_text("id,concept,tags\nfixture.test,fixture.content,plain-text,ascii\n")
+        (self.examples / "tables/fixtures.csv").write_text(
+            "id,concept,tags\nfixture.test,fixture.content,plain-text,ascii\n"
+        )
         self.assert_error("expected 3 columns, found 4")
 
     def test_unescaped_quote_in_unquoted_field(self):
@@ -111,7 +141,9 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("invalid CSV quoting")
 
     def test_unterminated_quote(self):
-        (self.examples / "tables/fixtures.csv").write_text('id,concept,tags\nfixture.test,fixture.content,"plain-text,ascii\n')
+        (self.examples / "tables/fixtures.csv").write_text(
+            'id,concept,tags\nfixture.test,fixture.content,"plain-text,ascii\n'
+        )
         self.assert_error("cannot read valid UTF-8 CSV")
 
     def test_multiline_record(self):
@@ -121,7 +153,13 @@ class ValidateSpecsTests(unittest.TestCase):
     def test_empty_and_duplicate_tags(self):
         for tags in ["ascii,ascii", "ascii,", "ascii, plain-text"]:
             with self.subTest(tags=tags):
-                self.write_csv("tables/fixtures.csv", [["id", "concept", "tags"], ["fixture.test", "fixture.content", tags]])
+                self.write_csv(
+                    "tables/fixtures.csv",
+                    [
+                        ["id", "concept", "tags"],
+                        ["fixture.test", "fixture.content", tags],
+                    ],
+                )
                 self.assert_error("tags must be unique lowercase")
 
     def test_required_concept_column(self):
@@ -149,22 +187,36 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assert_error("unknown fixture_id")
 
     def test_manifest_duplicate_json_keys(self):
-        (self.examples / "reference/example.astrea-manifest.json").write_text('{"messages": [], "messages": []}')
+        (self.examples / "reference/example.astrea-manifest.json").write_text(
+            '{"messages": [], "messages": []}'
+        )
         self.assert_error("duplicate JSON key messages")
 
     def test_nested_csv_is_validated(self):
-        self.write_csv("tables/nested/extra.csv", [
-            ["id", "concept"], ["row.one", "fixture.unknown"],
-        ])
+        self.write_csv(
+            "tables/nested/extra.csv",
+            [
+                ["id", "concept"],
+                ["row.one", "fixture.unknown"],
+            ],
+        )
         self.assert_error("tables/nested/extra.csv:2: unknown concept")
 
     def test_same_basename_in_different_folders_does_not_hide_records(self):
-        self.write_csv("tables/extra.csv", [
-            ["id", "concept"], ["row.one", "fixture.unknown"],
-        ])
-        self.write_csv("tables/nested/extra.csv", [
-            ["id", "concept"], ["row.two", "fixture.content"],
-        ])
+        self.write_csv(
+            "tables/extra.csv",
+            [
+                ["id", "concept"],
+                ["row.one", "fixture.unknown"],
+            ],
+        )
+        self.write_csv(
+            "tables/nested/extra.csv",
+            [
+                ["id", "concept"],
+                ["row.two", "fixture.content"],
+            ],
+        )
         self.assert_error("tables/extra.csv:2: unknown concept")
 
     def test_nested_registry_cannot_replace_canonical_root_registry(self):
@@ -174,13 +226,27 @@ class ValidateSpecsTests(unittest.TestCase):
     def test_nested_manifest_is_validated(self):
         target = self.examples / "reference/nested/extra.astrea-manifest.json"
         target.parent.mkdir()
-        target.write_text(json.dumps({"messages": [{
-            "fixture_id": "fixture.test", "concept": "fixture.content", "tags": [],
-        }]}))
-        self.assert_error("reference/nested/extra.astrea-manifest.json:messages[0]: tags must match fixture")
+        target.write_text(
+            json.dumps(
+                {
+                    "messages": [
+                        {
+                            "fixture_id": "fixture.test",
+                            "concept": "fixture.content",
+                            "tags": [],
+                        }
+                    ]
+                }
+            )
+        )
+        self.assert_error(
+            "reference/nested/extra.astrea-manifest.json:messages[0]: tags must match fixture"
+        )
 
     def test_repository_specs(self):
-        self.assertEqual(VALIDATOR.validate(SCRIPT.parents[1] / "doc/design-meta/examples"), [])
+        self.assertEqual(
+            VALIDATOR.validate(SCRIPT.parents[1] / "doc/design-meta/examples"), []
+        )
 
 
 if __name__ == "__main__":

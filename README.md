@@ -32,3 +32,30 @@ See [the Outlook example plan](doc/design-meta/examples/plans/outlook.astrea-pla
 See [the nested email example plan](doc/design-meta/examples/plans/nested.astrea-plan.json) for `fixture_parameters` that sets MIME depth to 8 for one selected fixture.
 
 For selective specification retrieval, start with the [AI agent task map](doc/design-meta/AGENTS.md), then use [concepts.csv](doc/design-meta/examples/concepts.csv) and the [coding-agent search guide](doc/design-meta/examples/retrieval.md). Validate search metadata with `python3 scripts/validate-specs.py`; run its regression checks with `python3 -B -m unittest discover -s tests -v`.
+
+## Python development
+
+Install [uv](https://docs.astral.sh/uv/) and the `gh flarebyte` GitHub CLI
+extension. The package supports Python 3.12+; `.python-version` pins Python
+3.14.6 for local development and reproducible reference fixtures.
+
+```sh
+uv sync --locked
+gh flarebyte config validate
+gh flarebyte format
+gh flarebyte lint
+gh flarebyte test
+gh flarebyte cov
+gh flarebyte build
+```
+
+The development dependencies are locked in `uv.lock`. Tests use pytest (including
+the existing unittest suite), formatting and lint use Ruff, and coverage uses
+coverage.py with an enforced 80% minimum across the package and specification
+validator. The package skeleton lives in `src/astrea`; the `astrea` console command
+will be added with the CLI implementation.
+
+`gh flarebyte build` runs tests and writes the wheel, source distribution, and
+`checksums.txt` to `build/`. The static version in `pyproject.toml` is the release
+version source. `.gh-flarebyte.cue` manages local workflows and repository policy;
+this setup does not apply settings to GitHub or publish a release.
