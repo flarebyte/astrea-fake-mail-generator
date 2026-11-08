@@ -7,12 +7,40 @@ from pathlib import Path
 
 from .errors import AstreaError
 
+MAX_JSON_BYTES = 64 * 1024 * 1024
+
+
+def iter_json(value, maximum=MAX_JSON_BYTES):
+    """Encode canonical JSON incrementally, checking bytes before yielding them."""
+    encoder = json.JSONEncoder(
+        ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False
+    )
+    total = 0
+    for text in encoder.iterencode(value):
+        chunk = text.encode("utf-8")
+        total += len(chunk)
+        if total >= maximum:  # Reserve the terminating newline.
+            raise AstreaError(
+                "E_LIMIT", "JSON metadata exceeds byte limit", "metadata", maximum
+            )
+        yield chunk
+    yield b"\n"
+
+
+def json_size(value, maximum=MAX_JSON_BYTES, indent_offset=0):
+    """Measure a document or an indented entry without materializing its bytes."""
+    total = 0
+    for chunk in iter_json(value, maximum):
+        total += len(chunk) + indent_offset * chunk.count(b"\n")
+        if total > maximum:
+            raise AstreaError(
+                "E_LIMIT", "JSON metadata exceeds byte limit", "metadata", maximum
+            )
+    return total
+
 
 def dumps(value):
-    return (
-        json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False)
-        + "\n"
-    )
+    return b"".join(iter_json(value)).decode("utf-8")
 
 
 def unique_keys(pairs):
@@ -44,7 +72,7 @@ def read_bytes(path, maximum, nofollow=False, dir_fd=None):
         raise AstreaError("E_IO", "Cannot read input file", exit_code=1) from exc
 
 
-def load(path, maximum=64 * 1024 * 1024, nofollow=False, dir_fd=None):
+def load(path, maximum=MAX_JSON_BYTES, nofollow=False, dir_fd=None):
     try:
         return json.loads(
             read_bytes(Path(path), maximum, nofollow, dir_fd).decode("utf-8"),

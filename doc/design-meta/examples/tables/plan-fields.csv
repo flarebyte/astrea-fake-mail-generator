@@ -1,8 +1,8 @@
 id,field,template_default,rule,concept
 plan.seed,seed,0,Required integer from 0 to 18446744073709551615; controls repeatable random choices,generation.reproducibility
 plan.periods,periods,one January 2025 period with 100 emails,Required nonempty array of titled date ranges and counts; list periods in chronological order without overlapping dates; combined count maximum 10000,generation.periods
-plan.periodid,periods[].id,january-2025,Required unique stable ID using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links,generation.periods
-plan.periodtitle,periods[].title,January 2025,Required nonempty documentation title; does not affect email contents or dates,generation.periods
+plan.periodid,periods[].id,january-2025,Required unique stable ID of at most 128 characters using lowercase ASCII letters digits and hyphens; used for repeatable generation and manifest links,generation.periods
+plan.periodtitle,periods[].title,January 2025,Required nonempty documentation title of at most 1024 characters; does not affect email contents or dates,generation.periods
 plan.periodstart,periods[].start,2025-01-01,Required ISO 8601 calendar date YYYY-MM-DD; first included UTC day,generation.periods
 plan.periodend,periods[].end,2025-01-31,Required ISO 8601 calendar date YYYY-MM-DD; last included UTC day; must be on or after start,generation.periods
 plan.periodcount,periods[].count,100,Required positive integer number of .eml files in this period including thread members; coverage minimum applies to each period,generation.periods

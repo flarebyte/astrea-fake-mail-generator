@@ -127,11 +127,13 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 128
           },
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 1024
           },
           "start": {
             "type": "string",
@@ -172,7 +174,8 @@
             "minimum": 0
           },
           "period_id": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 128
           },
           "date": {
             "type": "string"

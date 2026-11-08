@@ -10,10 +10,10 @@ from importlib.resources import files
 from .assets import inventory
 from .catalog import FIXTURES
 from .errors import AstreaError
-from .jsonio import dumps, load, read_bytes
+from .jsonio import MAX_JSON_BYTES, iter_json, json_size, load, read_bytes
 from .planning import cases, check_schema, preview
 from .rendering import POLICY, render, sha, walk
-from .storage import directory, safe_name, staging, write
+from .storage import directory, safe_name, staging, write, write_chunks
 
 
 def manifest(plan, entries, assets):
@@ -93,11 +93,23 @@ def schema_manifest(value):
 
 
 def generate(plan, output):
+    json_size(plan, MAX_JSON_BYTES)
     entries, assets = [], set()
+    metadata_bytes = 0
     total = 0
     with staging(output) as fd:
         for message in plan["messages"]:
             result = render(plan, message)
+            metadata_bytes += (
+                json_size(result.entry, MAX_JSON_BYTES, indent_offset=4) + 1
+            )
+            if metadata_bytes > MAX_JSON_BYTES:
+                raise AstreaError(
+                    "E_LIMIT",
+                    "Manifest entries exceed metadata byte limit",
+                    "metadata",
+                    MAX_JSON_BYTES,
+                )
             total += len(result.data)
             if total > plan["limits"]["max_batch_bytes"]:
                 raise AstreaError(
@@ -112,9 +124,12 @@ def generate(plan, output):
             entries.append(result.entry)
             assets.update(result.assets)
         summary = manifest(plan, entries, assets)
+        json_size(summary, MAX_JSON_BYTES)
         schema_manifest(summary)
-        write(fd, "batch.astrea-plan.json", dumps(plan).encode())
-        write(fd, "batch.astrea-manifest.json", dumps(summary).encode())
+        write_chunks(fd, "batch.astrea-plan.json", iter_json(plan, MAX_JSON_BYTES))
+        write_chunks(
+            fd, "batch.astrea-manifest.json", iter_json(summary, MAX_JSON_BYTES)
+        )
         # Validate the complete staged batch before publication.
         validate_fd(fd)
     return {"count": len(entries), "total_message_bytes": total}

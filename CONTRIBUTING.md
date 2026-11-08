@@ -172,7 +172,9 @@ days. After the environment gate, the workflow rechecks the selected commit and
 version, verifies checksums, and publishes the distributions through the PyPA
 Trusted Publishing action. A separate job then creates the GitHub release at the
 same commit with generated notes and attaches those exact files and checksums.
-Builds and tests have no OIDC or release-write permissions.
+Builds and tests have no OIDC or release-write permissions. All external actions
+are pinned to full upstream commit SHAs; review action updates and retain SHA
+pins. The offline release tests enforce this policy.
 
 PyPI publication and GitHub release creation are separate operations. If only the
 GitHub release job fails after PyPI succeeds, rerun the failed job while its build

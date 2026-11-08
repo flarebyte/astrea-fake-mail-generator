@@ -100,17 +100,27 @@ The CLI never invokes a parser on stress output.
 Planning bounds file counts and structural settings. Rendering enforces actual
 serialized bytes, header bytes, part counts, depth, attachment counts, and decoded
 attachment sizes. Batch byte limits are checked while writing. JSON input reads
-are bounded to 64 MiB; domain sources have their smaller dedicated cap. Validation
+are bounded to 64 MiB; expanded plan and manifest output have the same per-file
+UTF-8 budget, including the final newline. Period IDs are capped at 128 characters
+and titles at 1024. Plans are measured before staging, manifest entries are
+accounted for as they accumulate, and metadata writes stream with byte checks
+before each chunk. Domain sources have their smaller dedicated cap. Validation
 first compares actual message bytes with bounded deterministic fixture output,
 then parses only exact normal bytes. This keeps untrusted or stress bytes away
 from the in-process parser.
 
 ## Filesystem completion and validation
 
-Output parents must exist. Directory traversal opens each component with
+Output parents must exist. Output ancestry must be root/current-user owned and
+not group/other writable unless sticky-bit protections apply. macOS extended
+allow ACLs are conservatively rejected; absent and deny-only ACLs are allowed.
+Root and same-user processes are trusted; those principals can change filesystem
+state outside this protection boundary. Directory traversal opens each component with
 `O_NOFOLLOW` and holds directory descriptors. Files use exclusive creation and
 are flushed before completion. All output starts in a private sibling staging
-directory, which is validated before publication.
+directory, which is validated before publication. Staging identity is checked
+immediately before rename and against the resulting destination afterward.
+Observed substitutions fail without deleting another actor's replacement entry.
 
 Publication uses `renameatx_np(RENAME_EXCL)` on macOS or
 `renameat2(RENAME_NOREPLACE)` on Linux. It refuses a destination created during

@@ -318,9 +318,9 @@ def test_existing_and_racing_destinations_are_preserved(tmp_path, monkeypatch):
     target = tmp_path / "race"
     publish = storage.publish
 
-    def racing_publish(parent, staging, destination):
+    def racing_publish(parent, staging, destination, identity):
         os.mkdir(destination, dir_fd=parent)
-        publish(parent, staging, destination)
+        publish(parent, staging, destination, identity)
 
     monkeypatch.setattr(storage, "publish", racing_publish)
     with pytest.raises(AstreaError) as error:

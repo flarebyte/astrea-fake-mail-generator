@@ -23,7 +23,10 @@ uv run --locked astrea validate --input ./fixtures
 The core template creates 100 emails dated in January 2025. Edit the plan before
 generation to change periods, counts, fixture selections, profiles, seed, or limits.
 The output folder must not already exist; its parent must exist and its path must
-not contain symlinks or `..` components.
+not contain symlinks or `..` components. Output ancestry must be owned by you or
+root, with no shared write permissions unless protected by the sticky bit.
+macOS extended allow ACLs are conservatively rejected; use a private location.
+Root and other processes running as your user remain trusted.
 
 ```text
 fixtures/
@@ -32,6 +35,9 @@ fixtures/
   batch.astrea-plan.json
   batch.astrea-manifest.json
 ```
+
+Plan and manifest JSON files are limited to 64 MiB each. Period IDs are limited
+to 128 characters and titles to 1024. Oversized metadata fails with `E_LIMIT`.
 
 The manifest records file hashes, decoded-content expectations, ordered headers,
 MIME structure, attachments, and thread links. Validation recomputes required
