@@ -4,9 +4,10 @@ import json
 import os
 import subprocess
 import sys
+import tomllib
 
 import pytest
-from test_planning import single
+from test_planning import ROOT, single
 
 from astrea.cli import main
 from astrea.jsonio import dumps
@@ -25,7 +26,10 @@ def test_cli_catalog_templates_and_version(capsys):
     with pytest.raises(SystemExit) as result:
         main(["--version"])
     assert result.value.code == 0
-    assert capsys.readouterr().out.strip() == "0.1.0"
+    assert (
+        capsys.readouterr().out.strip()
+        == tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    )
 
 
 @pytest.mark.parametrize(
