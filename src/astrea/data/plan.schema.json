@@ -1,0 +1,293 @@
+{
+  "type": "object",
+  "properties": {
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
+    "include_stress": {
+      "type": "boolean"
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_message_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5242880
+        },
+        "max_batch_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "max_parts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_header_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        }
+      },
+      "required": [
+        "max_message_bytes",
+        "max_batch_bytes",
+        "max_depth",
+        "max_parts",
+        "max_header_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "selection": {
+      "type": "object",
+      "properties": {
+        "packs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "locales": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "client_profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "packs",
+        "fixtures",
+        "locales",
+        "client_profile",
+        "provider_profile"
+      ],
+      "additionalProperties": false
+    },
+    "fixture_parameters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    },
+    "domain_file": {
+      "type": "string"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 128
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "start",
+          "end",
+          "count"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "messages": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "period_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "period_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "date": {
+            "type": "string"
+          },
+          "fixture_id": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "profiles": {
+            "type": "object",
+            "properties": {
+              "client": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "provider": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "client",
+              "provider"
+            ],
+            "additionalProperties": false
+          },
+          "occurrence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thread_member_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "index",
+          "period_index",
+          "period_id",
+          "date",
+          "fixture_id",
+          "locale",
+          "profiles",
+          "occurrence",
+          "thread_member_index",
+          "parameters"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "seed",
+    "include_stress",
+    "limits",
+    "selection",
+    "fixture_parameters",
+    "periods"
+  ],
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "required": [
+        "domains"
+      ],
+      "not": {
+        "required": [
+          "domain_file"
+        ]
+      }
+    },
+    {
+      "required": [
+        "domain_file"
+      ],
+      "not": {
+        "required": [
+          "domains"
+        ]
+      }
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

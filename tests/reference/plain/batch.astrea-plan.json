@@ -1,0 +1,58 @@
+{
+  "domains": [
+    "example.test",
+    "newletter.test",
+    "blue.test"
+  ],
+  "fixture_parameters": {},
+  "include_stress": false,
+  "limits": {
+    "max_batch_bytes": 268435456,
+    "max_depth": 64,
+    "max_header_bytes": 65536,
+    "max_message_bytes": 5242880,
+    "max_parts": 1000
+  },
+  "messages": [
+    {
+      "date": "2025-01-16T12:00:00Z",
+      "fixture_id": "fixture.uk.plain",
+      "index": 1,
+      "locale": "en_GB",
+      "occurrence": 0,
+      "parameters": {},
+      "period_id": "january-2025",
+      "period_index": 0,
+      "profiles": {
+        "client": {
+          "id": "client.thunderbird"
+        },
+        "provider": {
+          "id": "provider.generic"
+        }
+      },
+      "thread_member_index": 0
+    }
+  ],
+  "periods": [
+    {
+      "count": 1,
+      "end": "2025-01-31",
+      "id": "january-2025",
+      "start": "2025-01-01",
+      "title": "January 2025"
+    }
+  ],
+  "seed": 0,
+  "selection": {
+    "client_profile": null,
+    "fixtures": [
+      "fixture.uk.plain"
+    ],
+    "locales": [],
+    "packs": [
+      "core"
+    ],
+    "provider_profile": null
+  }
+}

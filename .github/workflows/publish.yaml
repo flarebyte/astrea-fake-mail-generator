@@ -1,0 +1,128 @@
+name: Publish PyPI release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-release
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate and build release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version-file: .python-version
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.8.22'
+      - name: Install repository workflow tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install flarebyte/gh-flarebyte --pin v0.24.0
+      - name: Test release checker
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+      - name: Check release version
+        id: release
+        run: python3 .github/scripts/check_release.py
+      - run: uv sync --locked
+      - run: gh flarebyte config validate
+      - run: uv run --locked ruff format --check .
+      - run: gh flarebyte lint
+      - run: gh flarebyte cov
+      - run: gh flarebyte build
+      - name: Check distribution metadata
+        run: uvx --from twine==6.2.0 twine check --strict build/*.whl build/*.tar.gz
+      - name: Preserve tested release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: python-release
+          path: |
+            build/*.whl
+            build/*.tar.gz
+            build/checksums.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish to PyPI
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: pypi
+      url: https://pypi.org/project/astrea-fake-mail-generator/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version-file: .python-version
+      - name: Recheck release after environment approval
+        env:
+          EXPECTED_VERSION: ${{ needs.validate.outputs.version }}
+        run: python3 .github/scripts/check_release.py
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: python-release
+          path: build
+      - name: Verify and stage distributions
+        working-directory: build
+        run: |
+          sha256sum --check checksums.txt
+          mkdir ../dist
+          cp ./*.whl ./*.tar.gz ../dist/
+      - name: Publish distributions with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # release/v1
+        with:
+          packages-dir: dist/
+
+  release:
+    name: Create GitHub release
+    needs: [validate, publish]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: python-release
+          path: build
+      - name: Verify release files
+        working-directory: build
+        run: sha256sum --check checksums.txt
+      - name: Create release and attach published distributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes \
+            build/*.whl build/*.tar.gz build/checksums.txt

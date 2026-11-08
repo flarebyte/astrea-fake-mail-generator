@@ -1,0 +1,19 @@
+Return-Path: <morgan@example.test>
+Received: from newletter.test ([192.0.2.10]) by blue.test; Thu, 16 Jan 2025
+ 12:00:00 +0000
+Received: from blue.test ([192.0.2.11]) by example.test; Thu, 16 Jan 2025
+ 12:00:00 +0000
+From: Morgan Ellis <morgan@example.test>
+To: Eric Humphreys <alex@newletter.test>
+Date: Thu, 16 Jan 2025 12:00:00 +0000
+Message-ID: <astrea-70a75e0a959184e24a1ad27feda53c7c9510fe0ec579db13c21d24ad7a804dbd@blue.test>
+Subject: Meeting on Friday
+User-Agent: Astrea Thunderbird-style test fixture
+Content-Language: en-GB
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hello Eric Humphreys,
+Our meeting is on Friday at 10:00. Please confirm.
+Morgan

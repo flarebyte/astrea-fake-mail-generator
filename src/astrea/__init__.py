@@ -1,1 +1,1 @@
-"""Generate fake email files for testing (implementation forthcoming)."""
+"""Offline synthetic email fixtures. The supported interface is the astrea CLI."""

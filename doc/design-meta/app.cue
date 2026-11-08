@@ -41,7 +41,7 @@ notes: [
 	name: "astrea.overview",
 	title: "Intent and scope",
 	markdown: """
-Astrea is a proposed Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
+Astrea is a Python CLI that generates a folder of fake `.eml` email files for tests. Use `uv run --locked astrea`. Mailbox formats, import/export, and sending email are out of scope.
 
 Run `astrea generate --plan custom123.astrea-plan.json --out ./fixtures`. Generation settings come from the plan; CLI options select only the input plan, output folder, and diagnostic format. The plan includes titled ISO date periods with an exact email count for each. The plan supplies allowed .test domains either as a `domains` array or a `domain_file` text-file reference; saved batch plans embed the loaded list.
 
@@ -49,7 +49,7 @@ A fixture defines a test case. `batch.astrea-plan.json` records what to generate
 
 The MVP establishes representative multilingual coverage with UK and US English, several European Latin-script languages, Japanese, and Arabic RTL. It also covers synthetic Gmail/Outlook/Thunderbird header profiles, plain text, HTML, safe attachments, nested MIME, and opt-in bounded parser stress cases. Later releases broaden regional and language coverage as reviewed templates become available.
 
-See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The CLI is specified here and has not been implemented.
+See [intent, source conventions, and standards references](../design-meta/examples/overview.md). The MVP CLI is implemented under `src/astrea/`; see [the implementation overview](../../TECHNICAL_DESIGN.md) for current components and verification limits.
 """,
 	labels: ["design", "md"]
 },
