@@ -76,7 +76,7 @@ make thoth-python-test  # tests
 thoth search --root ./thoth-meta --term storage --fields purpose,responsibilities
 ```
 
-The two root `pipeline-python*-maat.thoth.cue` files are generic candidates for
+The two root `pipeline-python*-maat.thoth.cue` files are maintained unchanged in
 `baldrick-reserve/shared/python/all/`: neither names this package nor assumes a
 `src/` layout. Discovery respects `.gitignore` and excludes common environments,
 build outputs, and metadata. Files under `test/` or `tests/`, or named `test_*.py`
@@ -93,8 +93,18 @@ alongside code changes. Deleted or moved source files require removing or moving
 their old metadata explicitly; the pipelines do not prune stale files.
 
 Debug JSON goes to ignored `temp/pipeline-python*-maat.json`. Keep the YAML
-tracked. To reuse the workflow in reserve later, copy the two configs and their
-three thin Makefile targets; keep package-specific curation in each repository.
+tracked. The Makefile records both reserve source/destination pairs. `make reserve-check`
+checks drift; `make reserve-sync` replaces those two local configs. Neither runs
+automatically during builds or metadata generation. Both targets use your global
+`~/.gh-arrow` mappings, with no config override or revision pin. Map
+`baldrick-reserve` to your local checkout to pick up improvements from its
+working tree, including uncommitted changes. Without a matching global mapping,
+Arrow fetches the repository's default branch from GitHub.
+
+Run `make reserve-check` to review differences, then `make reserve-sync` to copy
+the reserve versions into this repository. Review the resulting diff and run
+`make thoth-meta` after changing the pipelines.
+Keep package-specific curation in each repository.
 
 ## Changing specifications
 
