@@ -23,10 +23,10 @@ uv run --locked astrea validate --input ./fixtures
 The core template creates 100 emails dated in January 2025. Edit the plan before
 generation to change periods, counts, fixture selections, profiles, seed, or limits.
 The output folder must not already exist; its parent must exist and its path must
-not contain symlinks or `..` components. Output ancestry must be owned by you or
-root, with no shared write permissions unless protected by the sticky bit.
-macOS extended allow ACLs are conservatively rejected; use a private location.
-Root and other processes running as your user remain trusted.
+not contain symlinks or `..` components. Use a private output location; shared
+writable ancestry and macOS extended allow ACLs are restricted. See the
+[filesystem boundaries](TECHNICAL_DESIGN.md#filesystem-completion-and-validation)
+for ownership, permission, and publication rules.
 
 ```text
 fixtures/
@@ -111,10 +111,14 @@ Exit codes are 0 for success, 2 for invalid requests or plans, and 1 for file-ac
 errors or failed batch checks. Add `--json-diagnostics` for structured errors on
 stderr; command results use stdout.
 
-## Development and design
+## Documentation
 
 - [Contributing](CONTRIBUTING.md): setup, checks, and specification maintenance.
-- [Technical design](TECHNICAL_DESIGN.md): components, data flow, and boundaries.
+- [Codebase overview](TECHNICAL_DESIGN.md): components, data flow, boundaries, and
+  a guide to locating changes and tests.
+- [Code metadata](thoth-meta/): searchable per-file summaries; see the
+  [refresh and sync workflow](CONTRIBUTING.md#code-metadata).
+- [Release guide](doc/releasing.md): maintainer setup and publication.
 - [Generated specification](doc/design/specification.md) and
   [generation contracts](doc/design-meta/examples/contracts.md).
 - [AI agent task map](doc/design-meta/AGENTS.md),
