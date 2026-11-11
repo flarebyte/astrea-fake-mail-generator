@@ -1,0 +1,59 @@
+locator: tests/test_runtime.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list: []
+  function_list:
+    - directory_bytes
+    - test_all_supported_profile_pairs
+    - test_core_semantics_and_offline_generation
+    - test_core_semantics_and_offline_generation.deny
+    - test_examples_generate_validate_and_replay
+    - test_existing_and_racing_destinations_are_preserved
+    - test_existing_and_racing_destinations_are_preserved.racing_publish
+    - test_normal_inspector_checks_independent_assertions
+    - test_period_content_independence
+    - test_resource_failures_leave_no_output
+    - test_saved_runtime_reference
+    - test_stress_mutation_records_and_bounded_parser
+    - test_structure_boundaries
+    - test_tampered_batches_are_rejected
+    - test_unsafe_output_paths_and_failure_cleanup
+  import_files_list:
+    - astrea
+    - astrea.batch
+    - astrea.catalog
+    - astrea.errors
+    - astrea.jsonio
+    - astrea.planning
+    - astrea.rendering
+    - base64
+    - copy
+    - email.parser
+    - json
+    - os
+    - pytest
+    - socket
+    - subprocess
+    - sys
+    - test_planning
+    - time
+    - unittest.mock
+  language: python
+  method_list: []
+  purpose: End-to-end generation, independent MIME checks, and hostile batch inputs.
+  responsibilities:
+    - Exercise generation, replay, and batch validation.
+  testcase_titles_list:
+    - test_all_supported_profile_pairs
+    - test_core_semantics_and_offline_generation
+    - test_examples_generate_validate_and_replay
+    - test_existing_and_racing_destinations_are_preserved
+    - test_normal_inspector_checks_independent_assertions
+    - test_period_content_independence
+    - test_resource_failures_leave_no_output
+    - test_saved_runtime_reference
+    - test_stress_mutation_records_and_bounded_parser
+    - test_structure_boundaries
+    - test_tampered_batches_are_rejected
+    - test_unsafe_output_paths_and_failure_cleanup

@@ -1,0 +1,18 @@
+locator: src/astrea/mutations.py
+meta:
+  architecture_notes:
+    - Mutated messages are never parsed and rewritten.
+  class_list: []
+  function_list:
+    - mutate
+    - mutate.edit
+    - sha
+  import_files_list:
+    - base64
+    - copy
+    - hashlib
+  language: python
+  method_list: []
+  purpose: Recorded non-overlapping byte edits; never parse or repair mutated output.
+  responsibilities:
+    - Apply recorded byte edits to parser stress fixtures.

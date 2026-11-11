@@ -1,0 +1,12 @@
+locator: src/astrea/__init__.py
+meta:
+  architecture_notes:
+    - The supported interface is the CLI rather than internal Python modules.
+  class_list: []
+  function_list: []
+  import_files_list: []
+  language: python
+  method_list: []
+  purpose: Offline synthetic email fixtures. The supported interface is the astrea CLI.
+  responsibilities:
+    - Identify the installed Astrea package.

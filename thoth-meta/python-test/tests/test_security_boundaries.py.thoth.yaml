@@ -1,0 +1,55 @@
+locator: tests/test_security_boundaries.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list: []
+  function_list:
+    - test_deny_only_acl_allows_private_output
+    - test_expanded_plan_fails_before_rendering_or_staging
+    - test_extended_allow_acl_is_rejected_even_without_write_mode_bits
+    - test_identifier_and_title_limits
+    - test_manifest_budget_stops_accumulation_and_cleans_staging
+    - test_parent_permissions_rechecked_before_publication
+    - test_shared_writable_ancestor_is_rejected
+    - test_shared_writable_output_parent_is_rejected
+    - test_source_replacement_after_precheck_cannot_report_success
+    - test_source_replacement_after_precheck_cannot_report_success.replace_after_check
+    - test_staging_source_replacement_is_rejected
+    - test_staging_source_replacement_is_rejected.replace
+    - test_sticky_parent_is_allowed
+    - test_streamed_json_exact_byte_limit
+    - test_streamed_write_failure_cleans_partial_metadata
+    - test_untrusted_owner_is_rejected
+  import_files_list:
+    - astrea
+    - astrea.errors
+    - astrea.jsonio
+    - astrea.planning
+    - json
+    - os
+    - pytest
+    - stat
+    - subprocess
+    - sys
+    - test_planning
+    - unittest.mock
+  language: python
+  method_list: []
+  purpose: Regression checks for metadata amplification and staging-source substitution.
+  responsibilities:
+    - Exercise filesystem confinement and resource boundaries.
+  testcase_titles_list:
+    - test_deny_only_acl_allows_private_output
+    - test_expanded_plan_fails_before_rendering_or_staging
+    - test_extended_allow_acl_is_rejected_even_without_write_mode_bits
+    - test_identifier_and_title_limits
+    - test_manifest_budget_stops_accumulation_and_cleans_staging
+    - test_parent_permissions_rechecked_before_publication
+    - test_shared_writable_ancestor_is_rejected
+    - test_shared_writable_output_parent_is_rejected
+    - test_source_replacement_after_precheck_cannot_report_success
+    - test_staging_source_replacement_is_rejected
+    - test_sticky_parent_is_allowed
+    - test_streamed_json_exact_byte_limit
+    - test_streamed_write_failure_cleans_partial_metadata
+    - test_untrusted_owner_is_rejected

@@ -1,0 +1,19 @@
+locator: .github/scripts/test_publish_workflow.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list:
+    - PublishingPolicyTests
+  function_list: []
+  import_files_list:
+    - pathlib
+    - re
+    - unittest
+  language: python
+  method_list:
+    - PublishingPolicyTests.test_every_external_action_uses_a_full_commit_sha
+  purpose: 'Security policy: external publishing workflow actions must be immutable.'
+  responsibilities:
+    - Exercise publishing workflow action pinning.
+  testcase_titles_list:
+    - PublishingPolicyTests.test_every_external_action_uses_a_full_commit_sha

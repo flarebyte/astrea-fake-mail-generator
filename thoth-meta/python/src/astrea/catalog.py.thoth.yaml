@@ -1,0 +1,15 @@
+locator: src/astrea/catalog.py
+meta:
+  architecture_notes:
+    - Runtime behavior uses packaged data independently of checkout documentation.
+  class_list: []
+  function_list:
+    - listing
+  import_files_list:
+    - importlib.resources
+    - json
+  language: python
+  method_list: []
+  purpose: Installed catalog; deliberately independent of checkout documentation.
+  responsibilities:
+    - Load the installed fixture catalog and expose supported selections.

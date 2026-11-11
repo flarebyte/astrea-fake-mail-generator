@@ -1,0 +1,24 @@
+locator: .github/scripts/check_release.py
+meta:
+  architecture_notes:
+    - Release preflight fails closed on invalid state or registry failures.
+  class_list: []
+  function_list:
+    - check_registry
+    - git
+    - main
+    - release_metadata
+  import_files_list:
+    - os
+    - pathlib
+    - re
+    - subprocess
+    - tomllib
+    - urllib.error
+    - urllib.parse
+    - urllib.request
+  language: python
+  method_list: []
+  purpose: Fail closed before releasing a new stable version from the tip of main.
+  responsibilities:
+    - Check release eligibility against repository and registry state.

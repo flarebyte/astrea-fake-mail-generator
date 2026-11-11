@@ -1,0 +1,31 @@
+locator: src/astrea/batch.py
+meta:
+  architecture_notes:
+    - Validation derives fixture expectations independently of the saved manifest.
+  class_list: []
+  function_list:
+    - generate
+    - inspect_normal
+    - manifest
+    - schema_manifest
+    - validate
+    - validate_fd
+  import_files_list:
+    - .assets
+    - .catalog
+    - .errors
+    - .jsonio
+    - .planning
+    - .rendering
+    - .storage
+    - collections
+    - email.parser
+    - importlib.resources
+    - json
+    - os
+    - stat
+  language: python
+  method_list: []
+  purpose: Batch orchestration and validation against independently recomputed fixtures.
+  responsibilities:
+    - Generate batches and validate manifests against recomputed expectations.

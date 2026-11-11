@@ -1,0 +1,31 @@
+locator: src/astrea/storage.py
+meta:
+  architecture_notes:
+    - Directory descriptors and identity checks enforce filesystem boundaries.
+  class_list: []
+  function_list:
+    - directory
+    - publish
+    - restrictive_darwin_acl
+    - safe_name
+    - staging
+    - trusted_directory
+    - verify_identity
+    - write
+    - write_chunks
+  import_files_list:
+    - .errors
+    - contextlib
+    - ctypes
+    - errno
+    - os
+    - pathlib
+    - shutil
+    - stat
+    - sys
+    - uuid
+  language: python
+  method_list: []
+  purpose: Descriptor-confined file access and exclusive publication of staged batches.
+  responsibilities:
+    - Confine file operations and publish staged batches exclusively.

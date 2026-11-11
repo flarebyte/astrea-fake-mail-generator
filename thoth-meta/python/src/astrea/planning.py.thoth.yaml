@@ -1,0 +1,32 @@
+locator: src/astrea/planning.py
+meta:
+  architecture_notes:
+    - Planning remains independent of batch filesystem writes.
+  class_list: []
+  function_list:
+    - cases
+    - check_schema
+    - digest
+    - domain
+    - domains
+    - normalize
+    - preview
+    - read_plan
+    - template
+  import_files_list:
+    - .catalog
+    - .errors
+    - .jsonio
+    - .models
+    - copy
+    - datetime
+    - hashlib
+    - json
+    - jsonschema
+    - pathlib
+    - re
+  language: python
+  method_list: []
+  purpose: Strict configuration and deterministic, side-effect-free planning.
+  responsibilities:
+    - Validate configuration and resolve deterministic generation choices.

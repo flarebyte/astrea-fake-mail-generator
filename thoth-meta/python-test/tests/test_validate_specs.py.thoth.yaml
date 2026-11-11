@@ -1,0 +1,79 @@
+locator: tests/test_validate_specs.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list:
+    - ValidateSpecsTests
+  function_list: []
+  import_files_list:
+    - csv
+    - importlib.util
+    - json
+    - pathlib
+    - tempfile
+    - unittest
+  language: python
+  method_list:
+    - ValidateSpecsTests.assert_error
+    - ValidateSpecsTests.errors
+    - ValidateSpecsTests.setUp
+    - ValidateSpecsTests.test_cyclic_or_nonhierarchical_parents
+    - ValidateSpecsTests.test_duplicate_columns
+    - ValidateSpecsTests.test_duplicate_concept_id
+    - ValidateSpecsTests.test_duplicate_record_id
+    - ValidateSpecsTests.test_empty_and_duplicate_tags
+    - ValidateSpecsTests.test_invalid_concept_id
+    - ValidateSpecsTests.test_manifest_duplicate_json_keys
+    - ValidateSpecsTests.test_manifest_invalid_types
+    - ValidateSpecsTests.test_manifest_known_but_wrong_concept
+    - ValidateSpecsTests.test_manifest_unknown_fixture
+    - ValidateSpecsTests.test_manifest_wrong_tags
+    - ValidateSpecsTests.test_missing_columns
+    - ValidateSpecsTests.test_missing_registry
+    - ValidateSpecsTests.test_multiline_record
+    - ValidateSpecsTests.test_nested_csv_is_validated
+    - ValidateSpecsTests.test_nested_manifest_is_validated
+    - ValidateSpecsTests.test_nested_registry_cannot_replace_canonical_root_registry
+    - ValidateSpecsTests.test_optional_tags_can_be_empty
+    - ValidateSpecsTests.test_repository_specs
+    - ValidateSpecsTests.test_required_concept_column
+    - ValidateSpecsTests.test_same_basename_in_different_folders_does_not_hide_records
+    - ValidateSpecsTests.test_unescaped_quote_in_unquoted_field
+    - ValidateSpecsTests.test_unknown_concept
+    - ValidateSpecsTests.test_unknown_parent
+    - ValidateSpecsTests.test_unquoted_tag_list_creates_extra_column
+    - ValidateSpecsTests.test_unterminated_quote
+    - ValidateSpecsTests.test_valid_quoted_tags_and_manifest
+    - ValidateSpecsTests.write_csv
+    - ValidateSpecsTests.write_manifest
+  purpose: Regression tests for concept links and searchable CSV integrity.
+  responsibilities:
+    - Exercise specification integrity validation.
+  testcase_titles_list:
+    - ValidateSpecsTests.test_cyclic_or_nonhierarchical_parents
+    - ValidateSpecsTests.test_duplicate_columns
+    - ValidateSpecsTests.test_duplicate_concept_id
+    - ValidateSpecsTests.test_duplicate_record_id
+    - ValidateSpecsTests.test_empty_and_duplicate_tags
+    - ValidateSpecsTests.test_invalid_concept_id
+    - ValidateSpecsTests.test_manifest_duplicate_json_keys
+    - ValidateSpecsTests.test_manifest_invalid_types
+    - ValidateSpecsTests.test_manifest_known_but_wrong_concept
+    - ValidateSpecsTests.test_manifest_unknown_fixture
+    - ValidateSpecsTests.test_manifest_wrong_tags
+    - ValidateSpecsTests.test_missing_columns
+    - ValidateSpecsTests.test_missing_registry
+    - ValidateSpecsTests.test_multiline_record
+    - ValidateSpecsTests.test_nested_csv_is_validated
+    - ValidateSpecsTests.test_nested_manifest_is_validated
+    - ValidateSpecsTests.test_nested_registry_cannot_replace_canonical_root_registry
+    - ValidateSpecsTests.test_optional_tags_can_be_empty
+    - ValidateSpecsTests.test_repository_specs
+    - ValidateSpecsTests.test_required_concept_column
+    - ValidateSpecsTests.test_same_basename_in_different_folders_does_not_hide_records
+    - ValidateSpecsTests.test_unescaped_quote_in_unquoted_field
+    - ValidateSpecsTests.test_unknown_concept
+    - ValidateSpecsTests.test_unknown_parent
+    - ValidateSpecsTests.test_unquoted_tag_list_creates_extra_column
+    - ValidateSpecsTests.test_unterminated_quote
+    - ValidateSpecsTests.test_valid_quoted_tags_and_manifest

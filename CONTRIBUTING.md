@@ -22,7 +22,7 @@ development and reproducible reference fixtures. `uv.lock` locks dependencies;
 ## Development checks
 
 `.gh-flarebyte.cue` owns the Python workflows. The Makefile owns documentation
-generation; run `make` to list its targets.
+and code metadata generation; run `make` to list its targets.
 
 | Task | Command |
 | --- | --- |
@@ -59,6 +59,42 @@ Arguments to the managed script runner go after `--`:
 ```sh
 gh flarebyte script validate-specs.py -- --help
 ```
+
+## Code metadata
+
+Run `make thoth-meta` before a substantial review to refresh the tracked
+`thoth-meta/**/*.thoth.yaml` overview. This optional workflow needs
+[thoth](https://github.com/flarebyte/thoth-ostraca), Node.js 24+, and npm/npx.
+The pipelines use the published `maat-ostraca@0.9.0` analyzer; its first run
+requires registry access. It statically analyzes Python without importing or
+executing the project.
+
+```sh
+make thoth-meta          # source and tests
+make thoth-python       # source and maintenance scripts
+make thoth-python-test  # tests
+thoth search --root ./thoth-meta --term storage --fields purpose,responsibilities
+```
+
+The two root `pipeline-python*-maat.thoth.cue` files are generic candidates for
+`baldrick-reserve/shared/python/all/`: neither names this package nor assumes a
+`src/` layout. Discovery respects `.gitignore` and excludes common environments,
+build outputs, and metadata. Files under `test/` or `tests/`, or named `test_*.py`
+or `*_test.py`, go to `thoth-meta/python-test`; other Python files go to
+`thoth-meta/python`. This includes maintenance and release scripts. Adjust the
+filters for repositories with different test conventions.
+
+Each summary contains imports and sorted function, method, and class names;
+test summaries also contain statically detected test titles. These titles are
+an orientation aid, not a pytest collection count. Curate `meta.purpose`,
+`meta.responsibilities`, and `meta.architecture_notes` in the YAML files: reruns
+merge structural fields while preserving those authored fields. Review metadata
+alongside code changes. Deleted or moved source files require removing or moving
+their old metadata explicitly; the pipelines do not prune stale files.
+
+Debug JSON goes to ignored `temp/pipeline-python*-maat.json`. Keep the YAML
+tracked. To reuse the workflow in reserve later, copy the two configs and their
+three thin Makefile targets; keep package-specific curation in each repository.
 
 ## Changing specifications
 

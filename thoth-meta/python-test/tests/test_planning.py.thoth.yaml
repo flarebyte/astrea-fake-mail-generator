@@ -1,0 +1,45 @@
+locator: tests/test_planning.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list: []
+  function_list:
+    - single
+    - test_domains_normalize_order_and_file_resolution
+    - test_domains_reject_invalid_inputs
+    - test_installed_catalog_matches_authored_specification
+    - test_invalid_fixture_parameters
+    - test_locale_filter_and_selection_deduplication
+    - test_period_constraints_and_independence
+    - test_rejects_invalid_configuration
+    - test_rejects_invalid_selection
+    - test_saved_plan_conflicts_and_strict_json
+    - test_stress_permission_and_selected_variant
+    - test_thread_counts_and_dates
+  import_files_list:
+    - astrea.catalog
+    - astrea.errors
+    - astrea.jsonio
+    - astrea.planning
+    - copy
+    - csv
+    - json
+    - pathlib
+    - pytest
+  language: python
+  method_list: []
+  purpose: Planning invariants, strict inputs, and installed specification parity.
+  responsibilities:
+    - Exercise planning invariants and packaged specification parity.
+  testcase_titles_list:
+    - test_domains_normalize_order_and_file_resolution
+    - test_domains_reject_invalid_inputs
+    - test_installed_catalog_matches_authored_specification
+    - test_invalid_fixture_parameters
+    - test_locale_filter_and_selection_deduplication
+    - test_period_constraints_and_independence
+    - test_rejects_invalid_configuration
+    - test_rejects_invalid_selection
+    - test_saved_plan_conflicts_and_strict_json
+    - test_stress_permission_and_selected_variant
+    - test_thread_counts_and_dates

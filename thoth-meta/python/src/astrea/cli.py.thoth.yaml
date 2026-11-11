@@ -1,0 +1,25 @@
+locator: src/astrea/cli.py
+meta:
+  architecture_notes:
+    - The CLI is the supported public interface.
+  class_list:
+    - Parser
+  function_list:
+    - main
+    - parser
+  import_files_list:
+    - .batch
+    - .catalog
+    - .errors
+    - .jsonio
+    - .planning
+    - argparse
+    - importlib.metadata
+    - pathlib
+    - sys
+  language: python
+  method_list:
+    - Parser.error
+  purpose: Public command line interface.
+  responsibilities:
+    - Parse public commands and translate application results into CLI output.

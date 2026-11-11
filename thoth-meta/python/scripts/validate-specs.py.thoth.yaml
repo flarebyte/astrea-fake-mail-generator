@@ -1,0 +1,21 @@
+locator: scripts/validate-specs.py
+meta:
+  architecture_notes:
+    - The validator runs with the Python standard library only.
+  class_list: []
+  function_list:
+    - main
+    - read_table
+    - unique_json_keys
+    - validate
+  import_files_list:
+    - argparse
+    - csv
+    - json
+    - pathlib
+    - re
+  language: python
+  method_list: []
+  purpose: Check searchable specification CSVs and their manifest metadata (stdlib only).
+  responsibilities:
+    - Validate specification CSV integrity and manifest metadata.

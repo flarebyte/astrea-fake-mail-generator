@@ -1,0 +1,16 @@
+locator: src/astrea/models.py
+meta:
+  architecture_notes:
+    - Planning records separate resolved choices from file generation.
+  class_list:
+    - Case
+  function_list: []
+  import_files_list:
+    - dataclasses
+  language: python
+  method_list:
+    - Case.key
+    - Case.size
+  purpose: Immutable resolved planning records.
+  responsibilities:
+    - Represent resolved fixture planning cases as immutable records.

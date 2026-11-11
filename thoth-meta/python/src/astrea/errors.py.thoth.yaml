@@ -1,0 +1,15 @@
+locator: src/astrea/errors.py
+meta:
+  architecture_notes:
+    - Application and command layers share the same diagnostic contract.
+  class_list:
+    - AstreaError
+  function_list: []
+  import_files_list: []
+  language: python
+  method_list:
+    - AstreaError.__init__
+    - AstreaError.diagnostic
+  purpose: Stable diagnostics shared by command and application code.
+  responsibilities:
+    - Carry stable error codes and user-facing diagnostic messages.

@@ -1,0 +1,42 @@
+locator: src/astrea/rendering.py
+meta:
+  architecture_notes:
+    - Serialization and expectations are explicit to support repeatable validation.
+  class_list:
+    - Rendered
+  function_list:
+    - attachment
+    - container
+    - content
+    - enforce
+    - expectations
+    - message_id
+    - render
+    - sha
+    - text_part
+    - walk
+    - with_headers
+  import_files_list:
+    - .assets
+    - .catalog
+    - .errors
+    - .mutations
+    - .planning
+    - base64
+    - copy
+    - dataclasses
+    - datetime
+    - email
+    - email.message
+    - email.utils
+    - faker
+    - hashlib
+    - html
+    - importlib.resources
+    - json
+    - unicodedata
+  language: python
+  method_list: []
+  purpose: Fixture construction, explicit MIME serialization, and semantic expectations.
+  responsibilities:
+    - Construct MIME fixtures and compute semantic expectations.

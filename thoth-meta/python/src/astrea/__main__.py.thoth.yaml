@@ -1,0 +1,13 @@
+locator: src/astrea/__main__.py
+meta:
+  architecture_notes:
+    - Command handling stays in astrea.cli.
+  class_list: []
+  function_list: []
+  import_files_list:
+    - .cli
+  language: python
+  method_list: []
+  purpose: Dispatch Python module execution to the CLI.
+  responsibilities:
+    - Dispatch Python module execution to the CLI.

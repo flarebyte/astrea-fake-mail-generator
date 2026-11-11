@@ -1,0 +1,15 @@
+locator: src/astrea/assets.py
+meta:
+  architecture_notes:
+    - Asset bytes are project-authored and fixed for repeatable fixtures.
+  class_list: []
+  function_list:
+    - inventory
+  import_files_list:
+    - hashlib
+    - importlib.resources
+  language: python
+  method_list: []
+  purpose: Packaged project-authored passive assets; fixed byte-for-byte.
+  responsibilities:
+    - Inventory packaged passive assets with hashes and provenance.

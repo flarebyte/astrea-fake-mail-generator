@@ -1,0 +1,42 @@
+locator: .github/scripts/test_check_release.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list:
+    - ReleaseTests
+  function_list:
+    - ReleaseTests.run_check.git
+    - ReleaseTests.run_check.read
+    - ReleaseTests.run_check.registry
+  import_files_list:
+    - importlib.util
+    - io
+    - os
+    - pathlib
+    - tempfile
+    - unittest
+    - unittest.mock
+    - urllib.error
+  language: python
+  method_list:
+    - ReleaseTests.run_check
+    - ReleaseTests.test_approved_version_unchanged
+    - ReleaseTests.test_invalid_version
+    - ReleaseTests.test_lock_mismatch
+    - ReleaseTests.test_main_only
+    - ReleaseTests.test_new_version
+    - ReleaseTests.test_registry_duplicates
+    - ReleaseTests.test_registry_failures
+    - ReleaseTests.test_tags
+  purpose: Offline regression checks for release eligibility and registry failures.
+  responsibilities:
+    - Exercise release eligibility and registry failure handling.
+  testcase_titles_list:
+    - ReleaseTests.test_approved_version_unchanged
+    - ReleaseTests.test_invalid_version
+    - ReleaseTests.test_lock_mismatch
+    - ReleaseTests.test_main_only
+    - ReleaseTests.test_new_version
+    - ReleaseTests.test_registry_duplicates
+    - ReleaseTests.test_registry_failures
+    - ReleaseTests.test_tags

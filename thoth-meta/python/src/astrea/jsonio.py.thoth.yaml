@@ -1,0 +1,23 @@
+locator: src/astrea/jsonio.py
+meta:
+  architecture_notes:
+    - Duplicate keys and oversized JSON are rejected at the input boundary.
+  class_list: []
+  function_list:
+    - dumps
+    - iter_json
+    - json_size
+    - load
+    - read_bytes
+    - unique_keys
+  import_files_list:
+    - .errors
+    - json
+    - os
+    - pathlib
+    - stat
+  language: python
+  method_list: []
+  purpose: Bounded strict JSON input and canonical output.
+  responsibilities:
+    - Read bounded strict JSON and serialize canonical output.

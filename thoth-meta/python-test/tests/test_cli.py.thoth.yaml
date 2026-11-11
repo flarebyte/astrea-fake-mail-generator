@@ -1,0 +1,30 @@
+locator: tests/test_cli.py
+meta:
+  architecture_notes:
+    - Regression tests exercise behavior without changing the production interface.
+  class_list: []
+  function_list:
+    - test_cli_catalog_templates_and_version
+    - test_cli_generate_validate_and_failures
+    - test_cross_process_repeatability
+    - test_invalid_arguments_have_json_errors
+  import_files_list:
+    - astrea.cli
+    - astrea.jsonio
+    - json
+    - os
+    - pytest
+    - subprocess
+    - sys
+    - test_planning
+    - tomllib
+  language: python
+  method_list: []
+  purpose: CLI stdout/stderr, diagnostics, and process-level reproducibility.
+  responsibilities:
+    - Exercise CLI output, diagnostics, and command behavior.
+  testcase_titles_list:
+    - test_cli_catalog_templates_and_version
+    - test_cli_generate_validate_and_failures
+    - test_cross_process_repeatability
+    - test_invalid_arguments_have_json_errors

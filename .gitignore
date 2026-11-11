@@ -11,3 +11,6 @@ build/
 dist/
 *.egg-info/
 .uv-cache/
+
+# Thoth debug output (durable metadata stays tracked).
+/temp/
